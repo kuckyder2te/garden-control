@@ -3,8 +3,6 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include "interface.h"
-#include "Blink.h"
-#include "Speak.h"
 #include "dht22.h"
 #include "bmp180.h"
 #include "secrets.h"
@@ -121,19 +119,19 @@ void setup()
 
   Serial.begin(115200);
   pinMode(POOL_SWT, OUTPUT);
-  pinMode(POOL_LED_GREEN, OUTPUT);
-  pinMode(POOL_LED_RED, OUTPUT);
+  pinMode(13, OUTPUT);
+  pinMode(15, OUTPUT);
 
   pinMode(WATERING_SWT, OUTPUT);
-  pinMode(WATERING_LED_GREEN, OUTPUT);
-  pinMode(WATERING_LED_RED, OUTPUT);
+  // pinMode(WATERING_LED_GREEN, OUTPUT);
+  // pinMode(WATERING_LED_RED, OUTPUT);
 
-  digitalWrite(POOL_LED_GREEN, LOW);
-  digitalWrite(POOL_LED_RED, LOW);
-  digitalWrite(POOL_SWT, LOW);
+  digitalWrite(13, LOW);
+  // digitalWrite(POOL_LED_RED, LOW);
+  digitalWrite(15, LOW);
 
-  digitalWrite(WATERING_LED_GREEN, LOW);
-  digitalWrite(WATERING_LED_RED, LOW);
+  // digitalWrite(WATERING_LED_GREEN, LOW);
+  // digitalWrite(WATERING_LED_RED, LOW);
   digitalWrite(WATERING_SWT, LOW);
 
   Serial.println();
@@ -145,11 +143,9 @@ void setup()
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
-  Tasks.add<Blink>()->startFps(1.);
-  Tasks.add<Speak>("speak")->startIntervalSec(0.5);
-  Tasks.add<dht22>()->startFps(0.1); // alle 10 sec
-  Tasks.add<bmp180>()->startFps(0.1);
-}
+  Tasks.add<dht22>()->startFps(1); // alle 1 sec
+  Tasks.add<bmp180>()->startFps(1);
+} /*--------------------------------------------------------------------------*/
 
 void reconnect()
 {
@@ -214,6 +210,8 @@ void loop()
       temp = _dht22->getHumidity();
       dtostrf(temp, 10, 1, result);
       client.publish("outGarden/humidity", result);
+      
+      lastMillis = millis();
 
       // client.publish("outGarden/humidity", getHumidity());
       // client.publish("outGarden/pressure", getPressure());

@@ -1,12 +1,19 @@
+/*
+File name: main.cpp
+Author:    Stefan Scholz / Wilhel Kuckelsberg
+Date:      2024.10.10
+Project:   Garden Control
+*/
+
 #include <Arduino.h>
 #include <TaskManager.h>
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
-#include "interface.h"
-#include "dht22.h"
-#include "bmp180.h"
-#include "secrets.h"
-#include <SFE_BMP180.h>
+#include <Wire.h>
+#include "..\lib\interface.h"
+#include "..\lib\dht22.h"
+#include "..\lib\bmp180.h"
+#include "..\lib\secrets.h"
 
 const char *ssid = SID;
 const char *password = PW;
@@ -17,7 +24,6 @@ PubSubClient client(espClient);
 unsigned long lastMsg = 0;
 #define MSG_BUFFER_SIZE (50)
 char msg[MSG_BUFFER_SIZE];
-int value = 0;
 
 bmp180 *_bmp180;
 dht22 *_dht22;
@@ -81,7 +87,7 @@ void callback(char *topic, byte *payload, unsigned int length)
           // Pump off
           pool_pump(false);
           break;
-        case '1': // true
+        case '1':
           // Pump on
           pool_pump(true);
           break;
@@ -94,10 +100,10 @@ void callback(char *topic, byte *payload, unsigned int length)
       {
         switch ((char)payload[0])
         {
-        case '0': // false
+        case '0':
           watering(false);
           break;
-        case '1': // true
+        case '1':
           watering(true);
           break;
         default:
@@ -116,23 +122,19 @@ void callback(char *topic, byte *payload, unsigned int length)
 void setup()
 {
   delay(2000);
-
   Serial.begin(115200);
+
   pinMode(POOL_SWT, OUTPUT);
-  pinMode(13, OUTPUT);
-  pinMode(15, OUTPUT);
-
   pinMode(WATERING_SWT, OUTPUT);
-  // pinMode(WATERING_LED_GREEN, OUTPUT);
-  // pinMode(WATERING_LED_RED, OUTPUT);
-
-  digitalWrite(13, LOW);
-  // digitalWrite(POOL_LED_RED, LOW);
-  digitalWrite(15, LOW);
-
-  // digitalWrite(WATERING_LED_GREEN, LOW);
-  // digitalWrite(WATERING_LED_RED, LOW);
+  digitalWrite(POOL_SWT, LOW);
   digitalWrite(WATERING_SWT, LOW);
+
+  pinMode(WATERING_LED_GREEN, OUTPUT);
+  pinMode(WATERING_LED_YELLOW, OUTPUT);
+  digitalWrite(WATERING_LED_GREEN, LOW);
+  digitalWrite(WATERING_LED_YELLOW, LOW);
+
+  //bmp180 *_bmp180 = new bmp180();
 
   Serial.println();
   Serial.println("Status\tHumidity (%)\tTemperature (C)\t(F)\tHeatIndex (C)\t(F)");
@@ -143,8 +145,12 @@ void setup()
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
-  Tasks.add<dht22>()->startFps(1); // alle 1 sec
-  Tasks.add<bmp180>()->startFps(1);
+  Tasks.add<dht22>("dht22")->startFps(0.1); // alle 10 sec
+ // _dht22 = Tasks.getTaskByName("dht22");
+_dht22 = reinterpret_cast<dht22 *>(Tasks["dht22"].get());
+
+// Tasks.add<bmp180>("BMP180")->startFps(0.1);
+
 } /*--------------------------------------------------------------------------*/
 
 void reconnect()
@@ -184,8 +190,9 @@ void reconnect()
 
 void loop()
 {
-  static unsigned long lastMillis = millis();
   float temp;
+  float humidity;
+  float pressure = 1001.1;
   char result[10];
 
   Tasks.update();
@@ -194,27 +201,23 @@ void loop()
   {
     reconnect();
   }
-  client.loop(); 
+  client.loop();
 
-  if (millis() - lastMillis >= 10000)
+  //   temp = _bmp180->getTemperature();
+     dtostrf(temp, 10, 1, result);
+     client.publish("outGarden/temperature", result);
 
-    {
-      temp = _bmp180->getTemperature();
-      dtostrf(temp, 10, 1, result);
-      client.publish("outGarden/temperature", result);
+  //   temp = _bmp180->getPressureSealevel();
+    dtostrf(pressure, 10, 1, result);
+    client.publish("outGarden/pressure", result);
 
-      temp = _bmp180->getPressureSealevel();
-      dtostrf(temp, 10, 1, result);
-      client.publish("outGarden/pressure", result);
+    humidity = _dht22->getHumidity();
+    Serial.print("humidity = ");Serial.println(humidity);
+   dtostrf(humidity, 10, 1, result);
+   client.publish("outGarden/humidity", result);
 
-      temp = _dht22->getHumidity();
-      dtostrf(temp, 10, 1, result);
-      client.publish("outGarden/humidity", result);
-      
-      lastMillis = millis();
+  //   client.publish("outGarden/humidity", _dht22->getHumidity());
+  //   client.publish("outGarden/pressure", getPressure());
+  //   client.publish("outGarden/climate", getClimate());
 
-      // client.publish("outGarden/humidity", getHumidity());
-      // client.publish("outGarden/pressure", getPressure());
-      // client.publish("outGarden/climate", getClimate());
-    }
 } /*--------------------------------------------------------------------------*/

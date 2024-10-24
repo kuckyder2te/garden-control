@@ -6,11 +6,11 @@
 #include <TaskManager.h>
 
 #include <SFE_BMP180.h>
-#include <Wire.h>
+// #include <Wire.h>
 
-#ifndef LED_BUILTIN
-#define LED_BUILTIN 13 // <- change to your own led pin
-#endif
+// #ifndef LED_BUILTIN
+// #define LED_BUILTIN 13 // <- change to your own led pin
+// #endif
 
 SFE_BMP180 pressure;
 // #define ALTITUDE 1655.0 // Altitude of SparkFun's HQ in Boulder, CO. in meters
@@ -41,8 +41,8 @@ public:
     bmp180(const String &name)
         : Task::Base(name), b(false)
     {
-        pinMode(LED_BUILTIN, OUTPUT);
-        digitalWrite(LED_BUILTIN, LOW);
+        // pinMode(LED_BUILTIN, OUTPUT);
+        // digitalWrite(LED_BUILTIN, LOW);
     }
 
     virtual void begin() override
@@ -66,8 +66,8 @@ public:
         Serial.print("provided altitude: ");
         Serial.print(ALTITUDE, 0);
         Serial.print(" meters, ");
-        Serial.print(ALTITUDE * 3.28084, 0);
-        Serial.println(" feet");
+        // Serial.print(ALTITUDE * 3.28084, 0);
+        // Serial.println(" feet");
 
         status = pressure.startTemperature();
         if (status != 0)
@@ -85,9 +85,9 @@ public:
                 // Print out the measurement:
                 Serial.print("temperature: ");
                 Serial.print(T, 2);
-                Serial.print(" deg C, ");
-                Serial.print((9.0 / 5.0) * T + 32.0, 2);
-                Serial.println(" deg F");
+                Serial.println(" deg C, ");
+                // Serial.print((9.0 / 5.0) * T + 32.0, 2);
+                // Serial.println(" deg F");
 
                 // Start a pressure measurement:
                 // The parameter is the oversampling setting, from 0 to 3 (highest res, longest wait).
@@ -112,9 +112,9 @@ public:
                         // Print out the measurement:
                         Serial.print("absolute pressure: ");
                         Serial.print(P, 2);
-                        Serial.print(" mb, ");
-                        Serial.print(P * 0.0295333727, 2);
-                        Serial.println(" inHg");
+                        Serial.println(" mb, ");
+                        // Serial.print(P * 0.0295333727, 2);
+                        // Serial.println(" inHg");
 
                         // The pressure sensor returns abolute pressure, which varies with altitude.
                         // To remove the effects of altitude, use the sealevel function and your current altitude.
@@ -125,9 +125,9 @@ public:
                         pressureSealevel = pressure.sealevel(P, ALTITUDE); // we're at 1655 meters (Boulder, CO)
                         Serial.print("relative (sea-level) pressure: ");
                         Serial.print(pressureSealevel, 2);
-                        Serial.print(" mb, ");
-                        Serial.print(pressureSealevel * 0.0295333727, 2);
-                        Serial.println(" inHg");
+                        Serial.println(" mb, ");
+                        // Serial.print(pressureSealevel * 0.0295333727, 2);
+                        // Serial.println(" inHg");
 
                         // On the other hand, if you want to determine your altitude from the pressure reading,
                         // use the altitude function along with a baseline pressure (sea-level or other).
@@ -137,9 +137,9 @@ public:
                         pressureAltitude = pressure.altitude(P, pressureSealevel);
                         Serial.print("computed altitude: ");
                         Serial.print(pressureAltitude, 0);
-                        Serial.print(" meters, ");
-                        Serial.print(pressureAltitude * 3.28084, 0);
-                        Serial.println(" feet");
+                        Serial.println(" meters, ");
+                        // Serial.print(pressureAltitude * 3.28084, 0);
+                        // Serial.println(" feet");
                     }
                     else
                         Serial.println("error retrieving pressure measurement\n");
@@ -154,15 +154,21 @@ public:
             Serial.println("error starting temperature measurement\n");
     } /*--------------------------------------------------------------------------*/
 
-    float getTemperature()
+    char *getTemperature()
     {
-        return temperature;
+        dtostrf(T, 10, 1, result);
+        // Serial.print("bmp temp = ");
+        // Serial.println(T);
+        return result;
 
     } /*--------------------------------------------------------------------------*/
 
-    float getPressureSealevel()
+    char *getPressureSealevel()
     {
-        return pressureSealevel;
+        dtostrf(pressureSealevel, 10, 1, result);
+        // Serial.print("pressure = ");
+        // Serial.println(pressureSealevel);
+        return result;
 
     } /*--------------------------------------------------------------------------*/
 };

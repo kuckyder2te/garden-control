@@ -126,15 +126,11 @@ void setup()
 
   pinMode(POOL_SWT, OUTPUT);
   pinMode(WATERING_SWT, OUTPUT);
-  digitalWrite(POOL_SWT, LOW);
-  digitalWrite(WATERING_SWT, LOW);
+  digitalWrite(POOL_SWT, HIGH);
+  digitalWrite(HIGH, LOW);
 
-  pinMode(WATERING_LED_GREEN, OUTPUT);
-  pinMode(WATERING_LED_YELLOW, OUTPUT);
-  digitalWrite(WATERING_LED_GREEN, LOW);
-  digitalWrite(WATERING_LED_YELLOW, LOW);
-
-  //bmp180 *_bmp180 = new bmp180();
+  pinMode(POOL_LED, OUTPUT);
+  digitalWrite(WATERING_LED, LOW);
 
   Serial.println();
   Serial.println("Status\tHumidity (%)\tTemperature (C)\t(F)\tHeatIndex (C)\t(F)");
@@ -145,12 +141,11 @@ void setup()
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
-  Tasks.add<dht22>("dht22")->startFps(0.1); // alle 10 sec
- // _dht22 = Tasks.getTaskByName("dht22");
-_dht22 = reinterpret_cast<dht22 *>(Tasks["dht22"].get());
+  Tasks.add<dht22>("DHT22")->startFps(0.1); // alle 10 sec
+  _dht22 = reinterpret_cast<dht22 *>(Tasks.getTaskByName("DHT22").get());
 
-// Tasks.add<bmp180>("BMP180")->startFps(0.1);
-
+  Tasks.add<bmp180>("BMP180")->startFps(0.1);
+  _bmp180 = reinterpret_cast<bmp180 *>(Tasks.getTaskByName("BMP180").get());
 } /*--------------------------------------------------------------------------*/
 
 void reconnect()
@@ -182,7 +177,6 @@ void reconnect()
       Serial.print("failed, rc=");
       Serial.print(client.state());
       Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
       delay(5000);
     }
   }
@@ -190,10 +184,8 @@ void reconnect()
 
 void loop()
 {
-  float temp;
-  float humidity;
-  float pressure = 1001.1;
-  char result[10];
+  static unsigned long lastMillis = millis();
+  uint16_t delayTime = 10000; // 10 sec
 
   Tasks.update();
 
@@ -203,21 +195,14 @@ void loop()
   }
   client.loop();
 
-  //   temp = _bmp180->getTemperature();
-     dtostrf(temp, 10, 1, result);
-     client.publish("outGarden/temperature", result);
+  if (millis() - lastMillis >= delayTime)
+  {
+    client.publish("outGarden/pressure", _bmp180->getPressureSealevel());
+    client.publish("outGarden/temperature", _bmp180->getTemperature());
+    client.publish("outGarden/humidity", _dht22->getHumidity());
+  //  client.publish("outGarden/temperature", _dht22->getTemperature());
 
-  //   temp = _bmp180->getPressureSealevel();
-    dtostrf(pressure, 10, 1, result);
-    client.publish("outGarden/pressure", result);
-
-    humidity = _dht22->getHumidity();
-    Serial.print("humidity = ");Serial.println(humidity);
-   dtostrf(humidity, 10, 1, result);
-   client.publish("outGarden/humidity", result);
-
-  //   client.publish("outGarden/humidity", _dht22->getHumidity());
-  //   client.publish("outGarden/pressure", getPressure());
-  //   client.publish("outGarden/climate", getClimate());
+    lastMillis = millis();
+  }
 
 } /*--------------------------------------------------------------------------*/

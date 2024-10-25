@@ -70,7 +70,8 @@ void callback(char *topic, byte *payload, unsigned int length)
   und mindestens eins sollte bei inPump/Egon ja drin sein
   */
   {
-    // The topic includes a '/', we'll try to read the number of bottles from just after that
+    // Serial.print("topic = ");Serial.println(topic);
+    //  The topic includes a '/', we'll try to read the number of bottles from just after that
     topicStr.remove(0, topicStr.indexOf('/') + 1);
     /*
       löscht inPump/ so dass in topicStr nur noch Egon übrig bleibt
@@ -125,11 +126,13 @@ void setup()
   Serial.begin(115200);
 
   pinMode(POOL_SWT, OUTPUT);
-  pinMode(WATERING_SWT, OUTPUT);
   digitalWrite(POOL_SWT, HIGH);
-  digitalWrite(HIGH, LOW);
-
   pinMode(POOL_LED, OUTPUT);
+  digitalWrite(POOL_LED, LOW);
+
+  pinMode(WATERING_SWT, OUTPUT);
+  digitalWrite(WATERING_SWT, HIGH);
+  pinMode(WATERING_LED, OUTPUT);
   digitalWrite(WATERING_LED, LOW);
 
   Serial.println();
@@ -200,7 +203,7 @@ void loop()
     client.publish("outGarden/pressure", _bmp180->getPressureSealevel());
     client.publish("outGarden/temperature", _bmp180->getTemperature());
     client.publish("outGarden/humidity", _dht22->getHumidity());
-  //  client.publish("outGarden/temperature", _dht22->getTemperature());
+    //  client.publish("outGarden/temperature", _dht22->getTemperature());
 
     lastMillis = millis();
   }

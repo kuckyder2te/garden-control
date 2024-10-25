@@ -30,8 +30,8 @@ void pool_pump(bool option)
     else
     {
         Serial.println("Pump OFF");
-        digitalWrite(POOL_SWT, LOW);
-        digitalWrite(POOL_LED, HIGH);
+        digitalWrite(POOL_SWT, HIGH);
+        digitalWrite(POOL_LED, LOW);
     }
     msg[0] = (option ? '1' : '0');
     msg[1] = 0;
@@ -43,13 +43,13 @@ void watering(bool option)
     if (option)
     {
         Serial.println("Watering ON");
-        digitalWrite(WATERING_SWT, HIGH);
+        digitalWrite(WATERING_SWT, LOW);
         digitalWrite(WATERING_LED, HIGH);
     }
     else
     {
         Serial.println("Watering OFF");
-        digitalWrite(WATERING_SWT, LOW);
+        digitalWrite(WATERING_SWT, HIGH);
         digitalWrite(WATERING_LED, LOW);
     }
     msg[0] = (option ? '1' : '0');

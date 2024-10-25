@@ -10,6 +10,7 @@ Project:   Garden Control
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <Wire.h>
+#include "..\lib\model.h"
 #include "..\lib\interface.h"
 #include "..\lib\dht22.h"
 #include "..\lib\bmp180.h"
@@ -25,8 +26,8 @@ unsigned long lastMsg = 0;
 #define MSG_BUFFER_SIZE (50)
 char msg[MSG_BUFFER_SIZE];
 
-bmp180 *_bmp180;
-dht22 *_dht22;
+// bmp180 *_bmp180;
+// dht22 *_dht22;
 
 void setup_wifi()
 {
@@ -144,11 +145,15 @@ void setup()
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
-  Tasks.add<dht22>("DHT22")->startFps(0.1); // alle 10 sec
-  _dht22 = reinterpret_cast<dht22 *>(Tasks.getTaskByName("DHT22").get());
+  Tasks.add<dht22>("DHT22")
+  ->setModel(&MODEL.climate)
+  ->startFps(0.1); // alle 10 sec
+  //_dht22 = reinterpret_cast<dht22 *>(Tasks.getTaskByName("DHT22").get());
 
-  Tasks.add<bmp180>("BMP180")->startFps(0.1);
-  _bmp180 = reinterpret_cast<bmp180 *>(Tasks.getTaskByName("BMP180").get());
+  Tasks.add<bmp180>("BMP180")
+  ->setModel(&MODEL.pressure)
+  ->startFps(0.1);
+  //_bmp180 = reinterpret_cast<bmp180 *>(Tasks.getTaskByName("BMP180").get());
 } /*--------------------------------------------------------------------------*/
 
 void reconnect()
@@ -200,9 +205,11 @@ void loop()
 
   if (millis() - lastMillis >= delayTime)
   {
-    client.publish("outGarden/pressure", _bmp180->getPressureSealevel());
-    client.publish("outGarden/temperature", _bmp180->getTemperature());
-    client.publish("outGarden/humidity", _dht22->getHumidity());
+    client.publish("outGarden/pressure", String(MODEL.pressure.pressureSealevel).c_str());
+    client.publish("outGarden/temperature", String(MODEL.pressure.temp).c_str());
+    client.publish("outGarden/humidity", String(MODEL.climate.humidity).c_str());
+    client.publish("outGarden/pool/pump", String(MODEL.interface.pump_state).c_str());
+    client.publish("outGarden/watering/state", String(MODEL.interface.watering_state).c_str());
     //  client.publish("outGarden/temperature", _dht22->getTemperature());
 
     lastMillis = millis();

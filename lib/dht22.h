@@ -11,9 +11,15 @@ DHTesp dhtESP;
 
 class dht22 : public Task::Base
 {
+public:
+    typedef struct{
+        float temp;
+        float humidity;
+    }model_t;
+
+private:
     bool b;
-    float humidity;
-    float temperature;
+    model_t *_model;
     char result[50];
 
 public:
@@ -24,6 +30,11 @@ public:
         digitalWrite(LED_BUILTIN, LOW);
     } /*--------------------------------------------------------------------------*/
 
+    dht22* setModel(model_t *model){
+        _model = model;
+        return this;
+    }
+
     virtual void begin() override
     {
         dhtESP.setup(DHT_PIN, DHTesp::DHT22);
@@ -33,36 +44,36 @@ public:
 
     virtual void update() override
     {
-        humidity = dhtESP.getHumidity();
-        temperature = dhtESP.getTemperature();
+        _model->humidity = dhtESP.getHumidity();
+        _model->temp = dhtESP.getTemperature();
 
         // Serial.print(dhtESP.getStatusString());
         // Serial.print("\t");
-        // Serial.print(humidity, 1);
+        // Serial.print(_model->humidity, 1);
         // Serial.print("\t\t");
-        // Serial.print(temperature, 1);
+        // Serial.print(_model->temp, 1);
         // Serial.print("\t\t");
-        // Serial.print(dhtESP.toFahrenheit(temperature), 1);
+        // Serial.print(dhtESP.toFahrenheit(_model->temp), 1);
         // Serial.print("\t\t");
-        // Serial.print(dhtESP.computeHeatIndex(temperature, humidity, false), 1);
+        // Serial.print(dhtESP.computeHeatIndex(_model->temp, _model->humidity, false), 1);
         // Serial.print("\t\t");
-        // Serial.println(dhtESP.computeHeatIndex(dhtESP.toFahrenheit(temperature), humidity, true), 1);
+        // Serial.println(dhtESP.computeHeatIndex(dhtESP.toFahrenheit(_model->temp), _model->humidity, true), 1);
 
-        Serial.print("Humidity ");
-        Serial.println(humidity);
-        Serial.print("Temperature ");
-        Serial.println(temperature);
+        Serial.print("_model->humidity ");
+        Serial.println(_model->humidity);
+        Serial.print("_model->temp ");
+        Serial.println(_model->temp);
     } /*--------------------------------------------------------------------------*/
 
     char *getTemperature()
     {
-        dtostrf(temperature, 10, 1, result);
+        dtostrf(_model->temp, 10, 1, result);
         return result;
     } /*--------------------------------------------------------------------------*/
 
     char *getHumidity()
     {
-        dtostrf(humidity, 10, 1, result);
+        dtostrf(_model->humidity, 10, 1, result);
         return result;
     } /*--------------------------------------------------------------------------*/
 };

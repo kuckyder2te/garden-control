@@ -20,21 +20,20 @@ SFE_BMP180 pressure;
 
 class bmp180 : public Task::Base
 {
+public:
+    typedef struct{
+        double temp;
+        double pressure;
+        double pressureSealevel;
+    }model_t;
+private:
     bool b;
-
+    model_t *_model;
     //    float humidity;
     float temperature;
     // double pressure;
-    float luftdruck = 995.0;       // in hPa    only test values
-    float temperatur = 18.5;       // in °C
-    float luftfeuchtigkeit = 85.0; // in %
-
     //   double p0;
-    double pressureSealevel;
     double pressureAltitude;
-    double T;
-    double P;
-
     char result[50];
 
 public:
@@ -43,6 +42,10 @@ public:
     {
         // pinMode(LED_BUILTIN, OUTPUT);
         // digitalWrite(LED_BUILTIN, LOW);
+    }
+    bmp180* setModel(model_t *model){
+        _model = model;
+        return this;
     }
 
     virtual void begin() override
@@ -76,17 +79,17 @@ public:
             delay(status);
 
             // Retrieve the completed temperature measurement:
-            // Note that the measurement is stored in the variable T.
+            // Note that the measurement is stored in the variable _model->temp.
             // Function returns 1 if successful, 0 if failure.
 
-            status = pressure.getTemperature(T);
+            status = pressure.getTemperature(bmp180::_model->temp);
             if (status != 0)
             {
                 // Print out the measurement:
                 Serial.print("temperature: ");
-                Serial.print(T, 2);
+                Serial.print(_model->temp, 2);
                 Serial.println(" deg C, ");
-                // Serial.print((9.0 / 5.0) * T + 32.0, 2);
+                // Serial.print((9.0 / 5.0) * _model->temp + 32.0, 2);
                 // Serial.println(" deg F");
 
                 // Start a pressure measurement:
@@ -101,40 +104,40 @@ public:
                     delay(status);
 
                     // Retrieve the completed pressure measurement:
-                    // Note that the measurement is stored in the variable P.
-                    // Note also that the function requires the previous temperature measurement (T).
+                    // Note that the measurement is stored in the variable _model->pressure.
+                    // Note also that the function requires the previous temperature measurement (_model->temp).
                     // (If temperature is stable, you can do one temperature measurement for a number of pressure measurements.)
                     // Function returns 1 if successful, 0 if failure.
 
-                    status = pressure.getPressure(P, T);
+                    status = pressure.getPressure(_model->pressure, _model->temp);
                     if (status != 0)
                     {
                         // Print out the measurement:
                         Serial.print("absolute pressure: ");
-                        Serial.print(P, 2);
+                        Serial.print(_model->pressure, 2);
                         Serial.println(" mb, ");
-                        // Serial.print(P * 0.0295333727, 2);
+                        // Serial.print(_model->pressure * 0.0295333727, 2);
                         // Serial.println(" inHg");
 
                         // The pressure sensor returns abolute pressure, which varies with altitude.
                         // To remove the effects of altitude, use the sealevel function and your current altitude.
                         // This number is commonly used in weather reports.
-                        // Parameters: P = absolute pressure in mb, ALTITUDE = current altitude in m.
+                        // Parameters: _model->pressure = absolute pressure in mb, ALTITUDE = current altitude in m.
                         // Result: p0 = sea-level compensated pressure in mb
 
-                        pressureSealevel = pressure.sealevel(P, ALTITUDE); // we're at 1655 meters (Boulder, CO)
+                        _model->pressureSealevel = pressure.sealevel(_model->pressure, ALTITUDE); // we're at 1655 meters (Boulder, CO)
                         Serial.print("relative (sea-level) pressure: ");
-                        Serial.print(pressureSealevel, 2);
+                        Serial.print(_model->pressureSealevel, 2);
                         Serial.println(" mb, ");
                         // Serial.print(pressureSealevel * 0.0295333727, 2);
                         // Serial.println(" inHg");
 
                         // On the other hand, if you want to determine your altitude from the pressure reading,
                         // use the altitude function along with a baseline pressure (sea-level or other).
-                        // Parameters: P = absolute pressure in mb, p0 = baseline pressure in mb.
+                        // Parameters: _model->pressure = absolute pressure in mb, p0 = baseline pressure in mb.
                         // Result: a = altitude in m.
 
-                        pressureAltitude = pressure.altitude(P, pressureSealevel);
+                        pressureAltitude = pressure.altitude(_model->pressure, _model->pressureSealevel);
                         Serial.print("computed altitude: ");
                         Serial.print(pressureAltitude, 0);
                         Serial.println(" meters, ");
@@ -156,16 +159,16 @@ public:
 
     char *getTemperature()
     {
-        dtostrf(T, 10, 1, result);
+        dtostrf(_model->temp, 10, 1, result);
         // Serial.print("bmp temp = ");
-        // Serial.println(T);
+        // Serial.println(_model->temp);
         return result;
 
     } /*--------------------------------------------------------------------------*/
 
     char *getPressureSealevel()
     {
-        dtostrf(pressureSealevel, 10, 1, result);
+        dtostrf(_model->pressureSealevel, 10, 1, result);
         // Serial.print("pressure = ");
         // Serial.println(pressureSealevel);
         return result;

@@ -11,10 +11,10 @@
 #include <PubSubClient.h>
 
 #define POOL_LED 13     // D2
-#define WATERING_LED 15 // D3
+#define VALVE_LED 15 // D3
 
 #define POOL_SWT 12     // D5
-#define WATERING_SWT 14 // D6
+#define VALVE_SWT 14 // D6
 
 namespace interface
 {
@@ -55,14 +55,14 @@ void watering(bool option)
     if (option)
     {
         Serial.println("Watering ON");
-        digitalWrite(WATERING_SWT, LOW);
-        digitalWrite(WATERING_LED, HIGH);
+        digitalWrite(VALVE_SWT, LOW);
+        digitalWrite(VALVE_LED, HIGH);
     }
     else
     {
         Serial.println("Watering OFF");
-        digitalWrite(WATERING_SWT, HIGH);
-        digitalWrite(WATERING_LED, LOW);
+        digitalWrite(VALVE_SWT, HIGH);
+        digitalWrite(VALVE_LED, LOW);
     }
     msg[0] = (option ? '1' : '0');
     msg[1] = 0; // String end

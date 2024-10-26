@@ -131,10 +131,10 @@ void setup()
   pinMode(POOL_LED, OUTPUT);
   digitalWrite(POOL_LED, LOW);
 
-  pinMode(WATERING_SWT, OUTPUT);
-  digitalWrite(WATERING_SWT, HIGH);
-  pinMode(WATERING_LED, OUTPUT);
-  digitalWrite(WATERING_LED, LOW);
+  pinMode(VALVE_SWT, OUTPUT);
+  digitalWrite(VALVE_SWT, HIGH);
+  pinMode(VALVE_LED, OUTPUT);
+  digitalWrite(VALVE_LED, LOW);
 
   Serial.println();
   Serial.println("Status\tHumidity (%)\tTemperature (C)\t(F)\tHeatIndex (C)\t(F)");

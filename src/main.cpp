@@ -208,7 +208,7 @@ void loop()
     client.publish("outGarden/pressure", String(MODEL.pressure.pressureSealevel).c_str());
     client.publish("outGarden/temperature", String(MODEL.pressure.temp).c_str());
     client.publish("outGarden/humidity", String(MODEL.climate.humidity).c_str());
-    client.publish("outGarden/pool_pump/pump", String(MODEL.interface.pump_state).c_str());
+    client.publish("outGarden/pool_pump/state", String(MODEL.interface.pump_state).c_str());
     client.publish("outGarden/valve/state", String(MODEL.interface.valve_state).c_str());
     //  client.publish("outGarden/temperature", _dht22->getTemperature());
 

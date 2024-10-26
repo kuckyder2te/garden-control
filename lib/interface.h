@@ -46,7 +46,7 @@ void pool_pump(bool option)
     }
     msg[0] = (option ? '1' : '0');
     msg[1] = 0;
-    client.publish("outGarden/pool_pump/pump", msg);
+    client.publish("outGarden/pool_pump/state", msg);
 } /*--------------------------------------------------------------------------*/
 
 void valve(bool option)
@@ -66,5 +66,5 @@ void valve(bool option)
     }
     msg[0] = (option ? '1' : '0');
     msg[1] = 0; // String end
-   // client.publish("outGarden/watering/state", msg);
+    client.publish("outGarden/watering/state", msg);
 } /*--------------------------------------------------------------------------*/

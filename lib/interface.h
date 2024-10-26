@@ -21,7 +21,7 @@ namespace interface
     typedef struct
     {
         bool pump_state;
-        bool watering_state;
+        bool valve_state;
     } model_t;
 }
 
@@ -51,7 +51,7 @@ void pool_pump(bool option)
 
 void valve(bool option)
 {
-    interface_model->watering_state = option;
+    interface_model->valve_state = option;
     if (option)
     {
         Serial.println("Valve ON");
@@ -66,5 +66,5 @@ void valve(bool option)
     }
     msg[0] = (option ? '1' : '0');
     msg[1] = 0; // String end
-    client.publish("outGarden/watering/state", msg);
+   // client.publish("outGarden/watering/state", msg);
 } /*--------------------------------------------------------------------------*/

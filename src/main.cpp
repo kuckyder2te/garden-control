@@ -209,7 +209,7 @@ void loop()
     client.publish("outGarden/temperature", String(MODEL.pressure.temp).c_str());
     client.publish("outGarden/humidity", String(MODEL.climate.humidity).c_str());
     client.publish("outGarden/pool/pump", String(MODEL.interface.pump_state).c_str());
-    client.publish("outGarden/watering/state", String(MODEL.interface.watering_state).c_str());
+    client.publish("outGarden/valve/state", String(MODEL.interface.valve_state).c_str());
     //  client.publish("outGarden/temperature", _dht22->getTemperature());
 
     lastMillis = millis();

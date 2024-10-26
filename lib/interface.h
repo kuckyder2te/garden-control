@@ -49,7 +49,7 @@ void pool_pump(bool option)
     client.publish("outGarden/pool/pump", msg);
 } /*--------------------------------------------------------------------------*/
 
-void watering(bool option)
+void valve(bool option)
 {
     interface_model->watering_state = option;
     if (option)

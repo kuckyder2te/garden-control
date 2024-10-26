@@ -103,10 +103,10 @@ void callback(char *topic, byte *payload, unsigned int length)
         switch ((char)payload[0])
         {
         case '0':
-          watering(false);
+          valve(false);
           break;
         case '1':
-          watering(true);
+          valve(true);
           break;
         default:
           // Warning !! Undefined payload or not 1/0

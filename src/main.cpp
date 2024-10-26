@@ -98,7 +98,7 @@ void callback(char *topic, byte *payload, unsigned int length)
           break;
         }
       }
-      else if (rootStr == "watering")
+      else if (rootStr == "valve")
       {
         switch ((char)payload[0])
         {

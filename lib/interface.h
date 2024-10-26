@@ -54,13 +54,13 @@ void valve(bool option)
     interface_model->watering_state = option;
     if (option)
     {
-        Serial.println("Watering ON");
+        Serial.println("Valve ON");
         digitalWrite(VALVE_SWT, LOW);
         digitalWrite(VALVE_LED, HIGH);
     }
     else
     {
-        Serial.println("Watering OFF");
+        Serial.println("Valve OFF");
         digitalWrite(VALVE_SWT, HIGH);
         digitalWrite(VALVE_LED, LOW);
     }

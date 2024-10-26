@@ -81,7 +81,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     {
       String rootStr = topicStr.substring(0, topicStr.indexOf('/'));
       Serial.println(rootStr);
-      if (rootStr == "pool")
+      if (rootStr == "pool_pump")
       {
         switch (payload[0])
         {
@@ -208,7 +208,7 @@ void loop()
     client.publish("outGarden/pressure", String(MODEL.pressure.pressureSealevel).c_str());
     client.publish("outGarden/temperature", String(MODEL.pressure.temp).c_str());
     client.publish("outGarden/humidity", String(MODEL.climate.humidity).c_str());
-    client.publish("outGarden/pool/pump", String(MODEL.interface.pump_state).c_str());
+    client.publish("outGarden/pool_pump/pump", String(MODEL.interface.pump_state).c_str());
     client.publish("outGarden/valve/state", String(MODEL.interface.valve_state).c_str());
     //  client.publish("outGarden/temperature", _dht22->getTemperature());
 

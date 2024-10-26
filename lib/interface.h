@@ -34,19 +34,19 @@ void pool_pump(bool option)
     interface_model->pump_state = option;
     if (option)
     {
-        Serial.println("Pump ON");
+        Serial.println("Pool Pump ON");
         digitalWrite(POOL_SWT, LOW);
         digitalWrite(POOL_LED, HIGH);
     }
     else
     {
-        Serial.println("Pump OFF");
+        Serial.println("Pool Pump OFF");
         digitalWrite(POOL_SWT, HIGH);
         digitalWrite(POOL_LED, LOW);
     }
     msg[0] = (option ? '1' : '0');
     msg[1] = 0;
-    client.publish("outGarden/pool/pump", msg);
+    client.publish("outGarden/pool_pump/pump", msg);
 } /*--------------------------------------------------------------------------*/
 
 void valve(bool option)

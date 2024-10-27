@@ -4,13 +4,7 @@
 
 #include <Arduino.h>
 #include <TaskManager.h>
-
 #include <SFE_BMP180.h>
-// #include <Wire.h>
-
-// #ifndef LED_BUILTIN
-// #define LED_BUILTIN 13 // <- change to your own led pin
-// #endif
 
 SFE_BMP180 pressure;
 // #define ALTITUDE 1655.0 // Altitude of SparkFun's HQ in Boulder, CO. in meters
@@ -21,18 +15,17 @@ SFE_BMP180 pressure;
 class bmp180 : public Task::Base
 {
 public:
-    typedef struct{
+    typedef struct
+    {
         double temp;
         double pressure;
         double pressureSealevel;
-    }model_t;
+    } model_t;
+
 private:
     bool b;
     model_t *_model;
-    //    float humidity;
     float temperature;
-    // double pressure;
-    //   double p0;
     double pressureAltitude;
     char result[50];
 
@@ -40,10 +33,9 @@ public:
     bmp180(const String &name)
         : Task::Base(name), b(false)
     {
-        // pinMode(LED_BUILTIN, OUTPUT);
-        // digitalWrite(LED_BUILTIN, LOW);
     }
-    bmp180* setModel(model_t *model){
+    bmp180 *setModel(model_t *model)
+    {
         _model = model;
         return this;
     }
@@ -155,24 +147,6 @@ public:
         }
         else
             Serial.println("error starting temperature measurement\n");
-    } /*--------------------------------------------------------------------------*/
-
-    char *getTemperature()
-    {
-        dtostrf(_model->temp, 10, 1, result);
-        // Serial.print("bmp temp = ");
-        // Serial.println(_model->temp);
-        return result;
-
-    } /*--------------------------------------------------------------------------*/
-
-    char *getPressureSealevel()
-    {
-        dtostrf(_model->pressureSealevel, 10, 1, result);
-        // Serial.print("pressure = ");
-        // Serial.println(pressureSealevel);
-        return result;
-
     } /*--------------------------------------------------------------------------*/
 };
 

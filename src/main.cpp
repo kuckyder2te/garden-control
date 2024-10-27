@@ -148,12 +148,10 @@ void setup()
   Tasks.add<dht22>("DHT22")
   ->setModel(&MODEL.climate)
   ->startFps(0.1); // alle 10 sec
-  //_dht22 = reinterpret_cast<dht22 *>(Tasks.getTaskByName("DHT22").get());
 
   Tasks.add<bmp180>("BMP180")
   ->setModel(&MODEL.pressure)
   ->startFps(0.1);
-  //_bmp180 = reinterpret_cast<bmp180 *>(Tasks.getTaskByName("BMP180").get());
 } /*--------------------------------------------------------------------------*/
 
 void reconnect()
@@ -207,12 +205,10 @@ void loop()
   {
     client.publish("outGarden/pressure", String(MODEL.pressure.pressureSealevel).c_str());
     client.publish("outGarden/temperature", String(MODEL.pressure.temp).c_str());
+  //  client.publish("outGarden/humidity", String(MODEL.climate.temp).c_str());
     client.publish("outGarden/humidity", String(MODEL.climate.humidity).c_str());
     client.publish("outGarden/pool_pump/state", String(MODEL.interface.pump_state).c_str());
     client.publish("outGarden/valve/state", String(MODEL.interface.valve_state).c_str());
-    //  client.publish("outGarden/temperature", _dht22->getTemperature());
-
     lastMillis = millis();
   }
-
 } /*--------------------------------------------------------------------------*/

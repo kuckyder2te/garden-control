@@ -3,7 +3,7 @@
     File name. interface.h
     Date: 2024.10.06
     Author: Stephan Scholz
-    Description: Pool Control
+    Description: Garden Control
 */
 
 #include <Arduino.h>
@@ -66,5 +66,5 @@ void valve(bool option)
     }
     msg[0] = (option ? '1' : '0');
     msg[1] = 0; // String end
-    client.publish("outGarden/watering/state", msg);
+    client.publish("outGarden/valve/state", msg);
 } /*--------------------------------------------------------------------------*/

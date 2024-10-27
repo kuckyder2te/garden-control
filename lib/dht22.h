@@ -64,18 +64,6 @@ public:
         Serial.print("_model->temp ");
         Serial.println(_model->temp);
     } /*--------------------------------------------------------------------------*/
-
-    char *getTemperature()
-    {
-        dtostrf(_model->temp, 10, 1, result);
-        return result;
-    } /*--------------------------------------------------------------------------*/
-
-    char *getHumidity()
-    {
-        dtostrf(_model->humidity, 10, 1, result);
-        return result;
-    } /*--------------------------------------------------------------------------*/
 };
 
 #endif // DHT22_H

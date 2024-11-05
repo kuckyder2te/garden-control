@@ -14,6 +14,7 @@ Project:   Garden Control
 #include "..\lib\interface.h"
 #include "..\lib\dht22.h"
 #include "..\lib\bmp180.h"
+#include "..\lib\rainsensor.h"
 #include "..\lib\secrets.h"
 
 const char *ssid = SID;
@@ -152,6 +153,11 @@ void setup()
   Tasks.add<bmp180>("BMP180")
   ->setModel(&MODEL.pressure)
   ->startFps(0.1);
+
+  Tasks.add<rainSensor>("MH_RD")
+  ->setModel(&MODEL.rain)
+  ->startFps(0.1);
+
 } /*--------------------------------------------------------------------------*/
 
 void reconnect()
@@ -191,7 +197,7 @@ void reconnect()
 void loop()
 {
   static unsigned long lastMillis = millis();
-  uint16_t delayTime = 10000; // 10 sec
+  uint16_t elapsed_time = 10000; // 10 sec
 
   Tasks.update();
 
@@ -201,7 +207,7 @@ void loop()
   }
   client.loop();
 
-  if (millis() - lastMillis >= delayTime)
+  if (millis() - lastMillis >= elapsed_time)
   {
     client.publish("outGarden/pressure", String(MODEL.pressure.pressureSealevel).c_str());
     client.publish("outGarden/temperature", String(MODEL.pressure.temp).c_str());

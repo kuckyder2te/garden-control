@@ -27,9 +27,6 @@ unsigned long lastMsg = 0;
 #define MSG_BUFFER_SIZE (50)
 char msg[MSG_BUFFER_SIZE];
 
-// bmp180 *_bmp180;
-// dht22 *_dht22;
-
 void setup_wifi()
 {
   delay(10);
@@ -147,15 +144,15 @@ void setup()
   client.setCallback(callback);
 
   Tasks.add<dht22>("DHT22")
-  ->setModel(&MODEL.climate)
+  ->setModel(&model.climate)
   ->startFps(0.1); // alle 10 sec
 
   Tasks.add<bmp180>("BMP180")
-  ->setModel(&MODEL.pressure)
+  ->setModel(&model.pressure)
   ->startFps(0.1);
 
   Tasks.add<rainSensor>("MH_RD")
-  ->setModel(&MODEL.rain)
+  ->setModel(&model.rain)
   ->startFps(0.1);
 
 } /*--------------------------------------------------------------------------*/
@@ -209,12 +206,12 @@ void loop()
 
   if (millis() - lastMillis >= elapsed_time)
   {
-    client.publish("outGarden/pressure", String(MODEL.pressure.pressureSealevel).c_str());
-    client.publish("outGarden/temperature", String(MODEL.pressure.temp).c_str());
-  //  client.publish("outGarden/humidity", String(MODEL.climate.temp).c_str());
-    client.publish("outGarden/humidity", String(MODEL.climate.humidity).c_str());
-    client.publish("outGarden/pool_pump/state", String(MODEL.interface.pump_state).c_str());
-    client.publish("outGarden/valve/state", String(MODEL.interface.valve_state).c_str());
+    client.publish("outGarden/pressure", String(model.pressure.pressureSealevel).c_str());
+    client.publish("outGarden/temperature", String(model.pressure.temp).c_str());
+  //  client.publish("outGarden/humidity", String(model.climate.temp).c_str());
+    client.publish("outGarden/humidity", String(model.climate.humidity).c_str());
+    client.publish("outGarden/pool_pump/state", String(model.interface.pump_state).c_str());
+    client.publish("outGarden/valve/state", String(model.interface.valve_state).c_str());
     lastMillis = millis();
   }
 } /*--------------------------------------------------------------------------*/

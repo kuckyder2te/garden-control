@@ -12,6 +12,6 @@ typedef struct
     interface::model_t interface;
 }model_t;
 
-model_t MODEL;
+model_t model;
 
-interface::model_t *interface_model = &MODEL.interface;
+interface::model_t *interface_model = &model.interface;

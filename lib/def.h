@@ -7,13 +7,7 @@
 
 
 
-#define POOL_PUMP  13 
-#define POOL_LED  15 
-
-#define WATERING_VALVE  12 
-#define WATERING_LED  14
-
+#define POOL_PUMP  4 
+#define WATERING_VALVE  5 
 #define POOLWATER_VALVE  14 
-#define POOLWATER_LED  14
-
-#define TRIGGER_PIN 16 //???
+#define TRIGGER_PIN 13

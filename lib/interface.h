@@ -15,9 +15,9 @@ namespace interface
 {
     typedef struct
     {
-        bool poolPump_state;
-        bool watering_valve_state;
-        bool poolwater_valve_state;
+        bool poolPump_state;          // Turns the pool pump on or off
+        bool watering_valve_state;    // Opens the valve for garden irrigation
+        bool poolwater_valve_state;   // Opens the valve for filling the pool
     } model_t;
 }
 
@@ -32,13 +32,11 @@ void pont_pump(bool option)
     {
         Serial.println("Pool Pump ON");
         digitalWrite(POOL_PUMP, LOW);
-        digitalWrite(POOL_LED, HIGH);
     }
     else
     {
         Serial.println("Pool Pump OFF");
         digitalWrite(POOL_PUMP, HIGH);
-        digitalWrite(POOL_LED, LOW);
     }
     msg[0] = (option ? '1' : '0');
     msg[1] = 0;
@@ -52,13 +50,11 @@ void watering_valve(bool option)
     {
         Serial.println("Watering Valve ON");
         digitalWrite(WATERING_VALVE, LOW);
-        digitalWrite(WATERING_LED, HIGH);
     }
     else
     {
         Serial.println("Valve OFF");
         digitalWrite(WATERING_VALVE, HIGH);
-        digitalWrite(WATERING_LED, LOW);
     }
     msg[0] = (option ? '1' : '0');
     msg[1] = 0; // String end
@@ -70,15 +66,13 @@ void poolwater_valve(bool option)
     interface_model->poolwater_valve_state = option;
     if (option)
     {
-        Serial.println("Valve ON");
+        Serial.println("Pool Water Valve ON");
         digitalWrite(POOLWATER_VALVE, LOW);
-        digitalWrite(POOLWATER_LED, HIGH);
     }
     else
     {
-        Serial.println("Valve OFF");
+        Serial.println("Pool Water Valve OFF");
         digitalWrite(POOLWATER_VALVE, HIGH);
-        digitalWrite(POOLWATER_LED, LOW);
     }
     msg[0] = (option ? '1' : '0');
     msg[1] = 0; // String end

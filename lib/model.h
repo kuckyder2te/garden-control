@@ -1,15 +1,13 @@
 #pragma once
-#include "bmp180.h"
-#include "dht22.h"
 #include "interface.h"
-#include "rainsensor.h"
+#include "rainfall.h"
 
 typedef struct 
 {
-    bmp180::model_t pressure;
-    rainSensor::model_t rain;
-    dht22::model_t climate;
+
+    rainFall::model_t rainMenge;
     interface::model_t interface;
+
 }model_t;
 
 model_t model;

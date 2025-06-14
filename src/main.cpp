@@ -12,14 +12,16 @@ Project:   Garden Control
 #include <Wire.h>
 #include "..\lib\model.h"
 #include "..\lib\interface.h"
-#include "..\lib\dht22.h"
-#include "..\lib\bmp180.h"
-#include "..\lib\rainsensor.h"
 #include "..\lib\secrets.h"
+#include "..\lib\def.h"
+#include "..\lib\rainfall.h"
+
+// #include <ArduinoOTA.h>
 
 const char *ssid = SID;
 const char *password = PW;
 const char *mqtt_server = MQTT;
+
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -85,32 +87,47 @@ void callback(char *topic, byte *payload, unsigned int length)
         {
         case '0': // false
           // Pump off
-          pool_pump(false);
+          pont_pump(false);
           break;
         case '1':
           // Pump on
-          pool_pump(true);
+          pont_pump(true);
           break;
         default:
           // Warning !! Undefined payload or not 1/0
           break;
         }
       }
-      else if (rootStr == "valve")
+      else if (rootStr == "watering-valve")
       {
         switch ((char)payload[0])
         {
         case '0':
-          valve(false);
+          watering_valve(false);
           break;
         case '1':
-          valve(true);
+          watering_valve(true);
           break;
         default:
           // Warning !! Undefined payload or not 1/0
           break;
         }
       }
+       else if (rootStr == "poolwater-valve")
+      {
+        switch ((char)payload[0])
+        {
+        case '0':
+          poolwater_valve(false);
+          break;
+        case '1':
+          poolwater_valve(true);
+          break;
+        default:
+          // Warning !! Undefined payload or not 1/0
+          break;
+        }
+      }     
       else
       {
         Serial.println("Unknown topic");
@@ -124,15 +141,20 @@ void setup()
   delay(2000);
   Serial.begin(115200);
 
-  pinMode(POOL_SWT, OUTPUT);
-  digitalWrite(POOL_SWT, HIGH);
+  pinMode(POOL_PUMP, OUTPUT);
+  digitalWrite(POOL_PUMP, HIGH);
   pinMode(POOL_LED, OUTPUT);
   digitalWrite(POOL_LED, LOW);
 
-  pinMode(VALVE_SWT, OUTPUT);
-  digitalWrite(VALVE_SWT, HIGH);
-  pinMode(VALVE_LED, OUTPUT);
-  digitalWrite(VALVE_LED, LOW);
+  pinMode(WATERING_VALVE, OUTPUT);
+  digitalWrite(WATERING_VALVE, HIGH);
+  pinMode(WATERING_LED, OUTPUT);
+  digitalWrite(WATERING_LED, LOW);
+
+  pinMode(POOLWATER_VALVE, OUTPUT);
+  digitalWrite(POOLWATER_VALVE, HIGH);
+  pinMode(POOLWATER_LED, OUTPUT);
+  digitalWrite(POOLWATER_LED, LOW);
 
   Serial.println();
   Serial.println("Status\tHumidity (%)\tTemperature (C)\t(F)\tHeatIndex (C)\t(F)");
@@ -140,19 +162,16 @@ void setup()
   Serial.println(thisBoard);
 
   setup_wifi();
+
+  // ArduinoOTA.setHostname(ESPHostname);   //Rainsensor
+  // ArduinoOTA.setPassword("admin");
+  // ArduinoOTA.begin();
+
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
-  Tasks.add<dht22>("DHT22")
-  ->setModel(&model.climate)
-  ->startFps(0.1); // alle 10 sec
-
-  Tasks.add<bmp180>("BMP180")
-  ->setModel(&model.pressure)
-  ->startFps(0.1);
-
-  Tasks.add<rainSensor>("MH_RD")
-  ->setModel(&model.rain)
+  Tasks.add<rainFall>("RAIN")
+  ->setModel(&model.rainMenge)
   ->startFps(0.1);
 
 } /*--------------------------------------------------------------------------*/
@@ -206,12 +225,9 @@ void loop()
 
   if (millis() - lastMillis >= elapsed_time)
   {
-    client.publish("outGarden/pressure", String(model.pressure.pressureSealevel).c_str());
-    client.publish("outGarden/temperature", String(model.pressure.temp).c_str());
-  //  client.publish("outGarden/humidity", String(model.climate.temp).c_str());
-    client.publish("outGarden/humidity", String(model.climate.humidity).c_str());
-    client.publish("outGarden/pool_pump/state", String(model.interface.pump_state).c_str());
-    client.publish("outGarden/valve/state", String(model.interface.valve_state).c_str());
+    client.publish("outGarden/pool-pump/state", String(model.interface.poolPump_state).c_str());
+    client.publish("outGarden/watering-valve/state", String(model.interface.watering_valve_state).c_str());
+    client.publish("outGarden/poolwater-valve/state", String(model.interface.poolwater_valve_state).c_str());
     lastMillis = millis();
   }
 } /*--------------------------------------------------------------------------*/

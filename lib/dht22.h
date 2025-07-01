@@ -47,17 +47,17 @@ public:
         _model->humidity = dhtESP.getHumidity();
         _model->temp = dhtESP.getTemperature();
 
-        // Serial.print(dhtESP.getStatusString());
-        // Serial.print("\t");
-        // Serial.print(_model->humidity, 1);
-        // Serial.print("\t\t");
-        // Serial.print(_model->temp, 1);
-        // Serial.print("\t\t");
-        // Serial.print(dhtESP.toFahrenheit(_model->temp), 1);
-        // Serial.print("\t\t");
-        // Serial.print(dhtESP.computeHeatIndex(_model->temp, _model->humidity, false), 1);
-        // Serial.print("\t\t");
-        // Serial.println(dhtESP.computeHeatIndex(dhtESP.toFahrenheit(_model->temp), _model->humidity, true), 1);
+        Serial.print(dhtESP.getStatusString());
+        Serial.print("\t");
+        Serial.print(_model->humidity, 1);
+        Serial.print("\t\t");
+        Serial.print(_model->temp, 1);
+        Serial.print("\t\t");
+        Serial.print(dhtESP.toFahrenheit(_model->temp), 1);
+        Serial.print("\t\t");
+        Serial.print(dhtESP.computeHeatIndex(_model->temp, _model->humidity, false), 1);
+        Serial.print("\t\t");
+        Serial.println(dhtESP.computeHeatIndex(dhtESP.toFahrenheit(_model->temp), _model->humidity, true), 1);
 
         Serial.print("_model->humidity ");
         Serial.println(_model->humidity);

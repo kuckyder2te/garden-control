@@ -4,7 +4,6 @@
 
 #include <Arduino.h>
 #include <TaskManager.h>
-#include <SFE_BMP180.h>
 
 SFE_BMP180 pressure;
 // #define ALTITUDE 1655.0 // Altitude of SparkFun's HQ in Boulder, CO. in meters

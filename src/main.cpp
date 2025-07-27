@@ -1,6 +1,6 @@
 /*
 File name: main.cpp
-Author:    Stefan Scholz / Wilhel Kuckelsberg
+Author:    Stefan Scholz / Wilhelm Kuckelsberg
 Date:      2024.10.10
 Project:   Garden Control
 */
@@ -8,31 +8,69 @@ Project:   Garden Control
 #include <Arduino.h>
 #include <TaskManager.h>
 #include <ESP8266WiFi.h>
+#include <ESPAsyncTCP.h>
+#include <ESPAsyncWebServer.h>
 #include <PubSubClient.h>
 #include <Wire.h>
+#include <ArduinoJson.h>
 #include "..\lib\model.h"
 #include "..\lib\interface.h"
 #include "..\lib\secrets.h"
 #include "..\lib\def.h"
 #include "..\lib\rainfall.h"
-
-// #include <ArduinoOTA.h>
+#include "..\lib\output.h"
 
 const char *ssid = SID;
 const char *password = PW;
 const char *mqtt_server = MQTT;
 
-
 WiFiClient espClient;
 PubSubClient client(espClient);
+JsonDocument doc;
+
 unsigned long lastMsg = 0;
 #define MSG_BUFFER_SIZE (50)
 char msg[MSG_BUFFER_SIZE];
 
+// volatile uint16_t count = 0;
+
+// ----- OTA --------
+#include <ElegantOTA.h>
+
+AsyncWebServer server(80);
+
+unsigned long ota_progress_millis = 0;
+
+void onOTAStart()
+{
+  Serial.println("OTA update started!");
+}
+
+void onOTAProgress(size_t current, size_t final)
+{
+  if (millis() - ota_progress_millis > 1000)
+  {
+    ota_progress_millis = millis();
+    Serial.printf("OTA Progress Current: %u bytes, Final: %u bytes\n", current, final);
+  }
+}
+
+void onOTAEnd(bool success)
+{
+  if (success)
+  {
+    Serial.println("OTA update finished successfully!");
+  }
+  else
+  {
+    Serial.println("There was an error during OTA update!");
+  }
+}
+// ----- OTA --------
+
 void setup_wifi()
 {
   delay(10);
-  // We start by connecting to a WiFi network
   Serial.println();
   Serial.print("Connecting to ");
   Serial.println(ssid);
@@ -59,6 +97,7 @@ void callback(char *topic, byte *payload, unsigned int length)
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
+
   for (int i = 0; i < length; i++)
   {
     Serial.print((char)payload[i]);
@@ -113,7 +152,7 @@ void callback(char *topic, byte *payload, unsigned int length)
           break;
         }
       }
-       else if (rootStr == "poolwater-valve")
+      else if (rootStr == "poolwater-valve")
       {
         switch ((char)payload[0])
         {
@@ -127,13 +166,22 @@ void callback(char *topic, byte *payload, unsigned int length)
           // Warning !! Undefined payload or not 1/0
           break;
         }
-      }     
+      }
       else
       {
         Serial.println("Unknown topic");
       }
     }
   }
+} /*--------------------------------------------------------------------------*/
+
+// Checks if motion was detected, sets LED HIGH and starts a timer
+IRAM_ATTR void detectsMovement()
+{
+  Serial.println("MOTION DETECTED!!!");
+  digitalWrite(LED_BUILTIN, HIGH);
+  //  count++;
+
 } /*--------------------------------------------------------------------------*/
 
 void setup()
@@ -147,66 +195,66 @@ void setup()
   pinMode(WATERING_VALVE, OUTPUT);
   digitalWrite(WATERING_VALVE, HIGH);
 
-  pinMode(POOLWATER_VALVE, OUTPUT);
+  pinMode(POOLWATER_VALVE, INPUT_PULLUP);
   digitalWrite(POOLWATER_VALVE, HIGH);
 
+  // Set motionSensor pin as interrupt, assign interrupt function and set RISING mode
+  // attachInterrupt(digitalPinToInterrupt(POOLWATER_VALVE), detectsMovement, RISING);
+
   Serial.println();
-  Serial.println("Status\tHumidity (%)\tTemperature (C)\t(F)\tHeatIndex (C)\t(F)");
+  Serial.println("Garden control is started");
   String thisBoard = ARDUINO_BOARD;
   Serial.println(thisBoard);
 
   setup_wifi();
 
-  // ArduinoOTA.setHostname(ESPHostname);   //Rainsensor
-  // ArduinoOTA.setPassword("admin");
-  // ArduinoOTA.begin();
-
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
-  Tasks.add<rainFall>("RAIN")
-  ->setModel(&model.rainMenge)
-  ->startFps(0.1);
+  Tasks.add<rainFall>("rain")
+      ->setModel(&model.rainMenge)
+      ->startFps(0.1);
+
+  Tasks.add<outPut>("output")
+      ->startFps(0.1);
+
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(200, "text/plain", "Garden-Service"); });
+
+  ElegantOTA.begin(&server); // Start ElegantOTA
+  ElegantOTA.onStart(onOTAStart);
+  ElegantOTA.onProgress(onOTAProgress);
+  ElegantOTA.onEnd(onOTAEnd);
+  server.begin();
+  Serial.println("HTTP server started");
 
 } /*--------------------------------------------------------------------------*/
 
-void reconnect()
+bool reconnect()
 {
-  while (!client.connected())
+  Serial.print("Attempting MQTT connection...");
+  String clientId = "ESP32Client-";
+  clientId += String(random(0xffff), HEX);
+
+  if (client.connect(clientId.c_str()))
   {
-    Serial.print("Attempting MQTT connection...");
-    // Create a random client ID
-    String clientId = "ESP8266Client-";
-    clientId += String(random(0xffff), HEX);
-    // Attempt to connect
-    if (client.connect(clientId.c_str()))
-    {
-      Serial.println("connected");
-      // Once connected, publish an announcement...
-      client.publish("outGarden", "Garden control");
-      // ... and resubscribe
-      client.subscribe("inGarden/#");
-      /*
-      client.subscribed zu allen Nachrichten wie z.B.
-      inPump/Status
-      inPump/Egon
-      inPump/Willy
-*/
-    }
-    else
-    {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      delay(5000);
-    }
+    Serial.println("connected");
+    client.publish("outGarden", "Garden control");
+    client.subscribe("inGarden/#");
+    return true;
+  }
+  else
+  {
+    Serial.print("failed, rc=");
+    Serial.print(client.state());
+    return false;
   }
 } /*--------------------------------------------------------------------------*/
 
 void loop()
 {
-  static unsigned long lastMillis = millis();
-  uint16_t elapsed_time = 10000; // 10 sec
+  // static unsigned long lastMillis = millis();
+  // uint16_t elapsed_time = 10000; // 10 sec
 
   Tasks.update();
 
@@ -216,11 +264,11 @@ void loop()
   }
   client.loop();
 
-  if (millis() - lastMillis >= elapsed_time)
-  {
-    client.publish("outGarden/pool-pump/state", String(model.interface.poolPump_state).c_str());
-    client.publish("outGarden/watering-valve/state", String(model.interface.watering_valve_state).c_str());
-    client.publish("outGarden/poolwater-valve/state", String(model.interface.poolwater_valve_state).c_str());
-    lastMillis = millis();
-  }
+  // if (millis() - lastMillis >= elapsed_time)
+  // {
+  //   client.publish("outGarden/pool-pump/state", String(model.interface.poolPump_state).c_str());
+  //   client.publish("outGarden/watering-valve/state", String(model.interface.watering_valve_state).c_str());
+  //   client.publish("outGarden/poolwater-valve/state", String(model.interface.poolwater_valve_state).c_str());
+  //   lastMillis = millis();
+  // }
 } /*--------------------------------------------------------------------------*/

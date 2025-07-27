@@ -2,8 +2,12 @@
 /*
     File name. interface.h
     Date: 2024.10.06
-    Author: Stephan Scholz
+    Author: Stephan Scholz / Wilhelm Kuckelsberg
     Description: Garden Control
+
+    Controls the pool pump on a time-controlled basis.
+    Turns on the rinse water and manual filling of the pool.
+    Controls the garden irrigation on a time-controlled basis.
 */
 
 #include <Arduino.h>

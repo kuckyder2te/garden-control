@@ -4,10 +4,8 @@
 
 typedef struct 
 {
-
     rainFall::model_t rainMenge;
     interface::model_t interface;
-
 }model_t;
 
 model_t model;

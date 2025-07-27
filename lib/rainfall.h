@@ -2,7 +2,7 @@
     Filename: rainfallr.h
     Date: 2025.06.08
     Author: Wilhelm Kuckelsberg
-    Description: Regen menge messen
+    Description: Regenmenge ermitteln
 */
 
 #pragma once

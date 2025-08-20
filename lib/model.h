@@ -6,6 +6,7 @@ typedef struct
 {
     rainFall::model_t rainMenge;
     interface::model_t interface;
+    volatile uint16_t count;
 }model_t;
 
 model_t model;

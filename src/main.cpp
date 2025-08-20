@@ -32,9 +32,9 @@ unsigned long lastMsg = 0;
 #define MSG_BUFFER_SIZE (50)
 char msg[MSG_BUFFER_SIZE];
 
-// volatile uint16_t count = 0;
+bool MAIN_LED_STATE = false;
 
-// ----- OTA --------
+// ----- OTA begin --------
 #include <ElegantOTA.h>
 
 AsyncWebServer server(80);
@@ -66,7 +66,7 @@ void onOTAEnd(bool success)
     Serial.println("There was an error during OTA update!");
   }
 }
-// ----- OTA --------
+// ----- OTA end --------
 
 void setup_wifi()
 {
@@ -137,7 +137,7 @@ void callback(char *topic, byte *payload, unsigned int length)
           break;
         }
       }
-      else if (rootStr == "watering-valve")
+      else if (rootStr == "watering_valve")
       {
         switch ((char)payload[0])
         {
@@ -152,7 +152,7 @@ void callback(char *topic, byte *payload, unsigned int length)
           break;
         }
       }
-      else if (rootStr == "poolwater-valve")
+      else if (rootStr == "poolwater_valve")
       {
         switch ((char)payload[0])
         {
@@ -176,30 +176,37 @@ void callback(char *topic, byte *payload, unsigned int length)
 } /*--------------------------------------------------------------------------*/
 
 // Checks if motion was detected, sets LED HIGH and starts a timer
-IRAM_ATTR void detectsMovement()
-{
-  Serial.println("MOTION DETECTED!!!");
-  digitalWrite(LED_BUILTIN, HIGH);
-  //  count++;
+// IRAM_ATTR void detectsMovement()
+// {
+//   Serial.println("MOTION DETECTED!!!");
+//   digitalWrite(LED_BUILTIN, HIGH);
+//   model.count++;
+//   digitalWrite(LED_BUILTIN, LOW);
 
-} /*--------------------------------------------------------------------------*/
+// } /*--------------------------------------------------------------------------*/
 
 void setup()
 {
   delay(2000);
   Serial.begin(115200);
 
-  pinMode(POOL_PUMP, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW);
+
+  pinMode(POOL_PUMP, OUTPUT_OPEN_DRAIN);
   digitalWrite(POOL_PUMP, HIGH);
 
-  pinMode(WATERING_VALVE, OUTPUT);
+  pinMode(WATERING_VALVE, OUTPUT_OPEN_DRAIN);
   digitalWrite(WATERING_VALVE, HIGH);
 
-  pinMode(POOLWATER_VALVE, INPUT_PULLUP);
+  pinMode(POOLWATER_VALVE, OUTPUT_OPEN_DRAIN);
   digitalWrite(POOLWATER_VALVE, HIGH);
 
+  pinMode(TRIGGER_PIN, INPUT_PULLUP);
+  // digitalWrite(TRIGGER_PIN, LOW);
+
   // Set motionSensor pin as interrupt, assign interrupt function and set RISING mode
-  // attachInterrupt(digitalPinToInterrupt(POOLWATER_VALVE), detectsMovement, RISING);
+  // attachInterrupt(digitalPinToInterrupt(TRIGGER_PIN), detectsMovement, RISING);
 
   Serial.println();
   Serial.println("Garden control is started");
@@ -211,8 +218,8 @@ void setup()
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
-  Tasks.add<rainFall>("rain")
-      ->setModel(&model.rainMenge)
+  Tasks.add<rainFall>("rainFall")
+      ->setClient(&client)
       ->startFps(0.1);
 
   Tasks.add<outPut>("output")
@@ -233,13 +240,13 @@ void setup()
 bool reconnect()
 {
   Serial.print("Attempting MQTT connection...");
-  String clientId = "ESP32Client-";
+  String clientId = "PumpValveNode-";
   clientId += String(random(0xffff), HEX);
 
   if (client.connect(clientId.c_str()))
   {
     Serial.println("connected");
-    client.publish("outGarden", "Garden control");
+    client.publish("outGarden", "{\"msg\":\"Reconnect: Pool Pump and Valve\"}");
     client.subscribe("inGarden/#");
     return true;
   }
@@ -253,8 +260,9 @@ bool reconnect()
 
 void loop()
 {
-  // static unsigned long lastMillis = millis();
+  static unsigned long lastMillis = millis();
   // uint16_t elapsed_time = 10000; // 10 sec
+  static bool TriggerState = digitalRead(TRIGGER_PIN);
 
   Tasks.update();
 
@@ -264,11 +272,17 @@ void loop()
   }
   client.loop();
 
-  // if (millis() - lastMillis >= elapsed_time)
-  // {
-  //   client.publish("outGarden/pool-pump/state", String(model.interface.poolPump_state).c_str());
-  //   client.publish("outGarden/watering-valve/state", String(model.interface.watering_valve_state).c_str());
-  //   client.publish("outGarden/poolwater-valve/state", String(model.interface.poolwater_valve_state).c_str());
-  //   lastMillis = millis();
-  // }
+  if (digitalRead(TRIGGER_PIN) != TriggerState)
+  {
+    TriggerState = digitalRead(TRIGGER_PIN);
+    model.count++;
+    client.publish("outGarden/rainSensor/trip", "1");
+  }
+
+  if (millis() - lastMillis >= 1000)
+  {
+    digitalWrite(LED_BUILTIN, MAIN_LED_STATE);
+    MAIN_LED_STATE =! MAIN_LED_STATE;
+    lastMillis = millis();
+  }
 } /*--------------------------------------------------------------------------*/

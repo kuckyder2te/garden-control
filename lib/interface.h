@@ -19,9 +19,9 @@ namespace interface
 {
     typedef struct
     {
-        bool poolPump_state;          // Turns the pool pump on or off
-        bool watering_valve_state;    // Opens the valve for garden irrigation
-        bool poolwater_valve_state;   // Opens the valve for filling the pool
+        bool poolPump_state;        // Turns the pool pump on or off
+        bool watering_valve_state;  // Opens the valve for garden irrigation
+        bool poolwater_valve_state; // Opens the valve for filling the pool
     } model_t;
 }
 
@@ -57,12 +57,12 @@ void watering_valve(bool option)
     }
     else
     {
-        Serial.println("Valve OFF");
+        Serial.println("Watering Valve OFF");
         digitalWrite(WATERING_VALVE, HIGH);
     }
     msg[0] = (option ? '1' : '0');
     msg[1] = 0; // String end
-    client.publish("outGarden/watering-valve/state", msg);
+    client.publish("outGarden/watering_valve/state", msg);
 } /*--------------------------------------------------------------------------*/
 
 void poolwater_valve(bool option)
@@ -80,5 +80,5 @@ void poolwater_valve(bool option)
     }
     msg[0] = (option ? '1' : '0');
     msg[1] = 0; // String end
-    client.publish("outGarden/poolwater-valve/state", msg);
+    client.publish("outGarden/poolwater_valve/state", msg);
 } /*--------------------------------------------------------------------------*/

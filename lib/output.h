@@ -47,10 +47,10 @@ public:
 
     virtual void update() override
     {
-        Serial.println("OutPut");
-        client.publish("outGarden/pool-pump/state", String(model.interface.poolPump_state).c_str());
-        client.publish("outGarden/watering-valve/state", String(model.interface.watering_valve_state).c_str());
-        client.publish("outGarden/poolwater-valve/state", String(model.interface.poolwater_valve_state).c_str());
+    //    Serial.println("OutPut");
+        client.publish("outGarden/pool_pump/state", String(model.interface.poolPump_state).c_str());
+        client.publish("outGarden/watering_valve/state", String(model.interface.watering_valve_state).c_str());
+        client.publish("outGarden/poolwater_valve/state", String(model.interface.poolwater_valve_state).c_str());
 
     } /*--------------------------------------------------------------------------*/
 };

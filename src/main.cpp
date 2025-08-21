@@ -17,7 +17,7 @@ Project:   Garden Control
 #include "..\lib\interface.h"
 #include "..\lib\secrets.h"
 #include "..\lib\def.h"
-#include "..\lib\rainfall.h"
+// #include "..\lib\rainfall.h"
 #include "..\lib\output.h"
 
 const char *ssid = SID;
@@ -33,6 +33,8 @@ unsigned long lastMsg = 0;
 char msg[MSG_BUFFER_SIZE];
 
 bool MAIN_LED_STATE = false;
+
+volatile uint16 rain_counter = 0;
 
 // ----- OTA begin --------
 #include <ElegantOTA.h>
@@ -176,18 +178,18 @@ void callback(char *topic, byte *payload, unsigned int length)
 } /*--------------------------------------------------------------------------*/
 
 // Checks if motion was detected, sets LED HIGH and starts a timer
-// IRAM_ATTR void detectsMovement()
-// {
-//   Serial.println("MOTION DETECTED!!!");
-//   digitalWrite(LED_BUILTIN, HIGH);
-//   model.count++;
-//   digitalWrite(LED_BUILTIN, LOW);
+IRAM_ATTR void detectsMovement()
+{
+  Serial.println("MOTION DETECTED!!!");
+  digitalWrite(LED_BUILTIN, HIGH);
+  rain_counter++;
+  digitalWrite(LED_BUILTIN, LOW);
 
-// } /*--------------------------------------------------------------------------*/
+} /*--------------------------------------------------------------------------*/
 
 void setup()
 {
-  delay(2000);
+  delay(500);
   Serial.begin(115200);
 
   pinMode(LED_BUILTIN, OUTPUT);
@@ -206,7 +208,7 @@ void setup()
   // digitalWrite(TRIGGER_PIN, LOW);
 
   // Set motionSensor pin as interrupt, assign interrupt function and set RISING mode
-  // attachInterrupt(digitalPinToInterrupt(TRIGGER_PIN), detectsMovement, RISING);
+  attachInterrupt(digitalPinToInterrupt(TRIGGER_PIN), detectsMovement, RISING);
 
   Serial.println();
   Serial.println("Garden control is started");
@@ -246,7 +248,7 @@ bool reconnect()
   if (client.connect(clientId.c_str()))
   {
     Serial.println("connected");
-    client.publish("outGarden", "{\"msg\":\"Reconnect: Pool Pump and Valve\"}");
+    client.publish("outGarden", "{\"msg\":\"Reconnect: Pool Pump and Valves\"}");
     client.subscribe("inGarden/#");
     return true;
   }
@@ -261,7 +263,6 @@ bool reconnect()
 void loop()
 {
   static unsigned long lastMillis = millis();
-  // uint16_t elapsed_time = 10000; // 10 sec
   static bool TriggerState = digitalRead(TRIGGER_PIN);
 
   Tasks.update();
@@ -275,7 +276,7 @@ void loop()
   if (digitalRead(TRIGGER_PIN) != TriggerState)
   {
     TriggerState = digitalRead(TRIGGER_PIN);
-    model.count++;
+    rain_counter++;
     client.publish("outGarden/rainSensor/trip", "1");
   }
 

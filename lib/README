@@ -1,3 +1,8 @@
+# const char *mmPerSquareMeter = "0.094175";
+# 1.25 ml per dipper change, 94.175 ml per m^2 (=1.25*75.34), = 0.094175mm/m^2
+# diameter of raingauge is about 130mm, r = 65mm, surface = pi*r^2 = 132.73 cm^2
+# therefore per m^2 (=10000cm^2) we have a factor of about 75.34
+
 
 This directory is intended for project specific (private) libraries.
 PlatformIO will compile them to static libraries and link into executable file.

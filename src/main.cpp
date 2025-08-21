@@ -6,19 +6,16 @@ Project:   Garden Control
 */
 
 #include <Arduino.h>
-#include <TaskManager.h>
+// #include <TaskManager.h>
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <PubSubClient.h>
 #include <Wire.h>
 #include <ArduinoJson.h>
-#include "..\lib\model.h"
 #include "..\lib\interface.h"
 #include "..\lib\secrets.h"
 #include "..\lib\def.h"
-// #include "..\lib\rainfall.h"
-#include "..\lib\output.h"
 
 const char *ssid = SID;
 const char *password = PW;
@@ -205,7 +202,6 @@ void setup()
   digitalWrite(POOLWATER_VALVE, HIGH);
 
   pinMode(TRIGGER_PIN, INPUT_PULLUP);
-  // digitalWrite(TRIGGER_PIN, LOW);
 
   // Set motionSensor pin as interrupt, assign interrupt function and set RISING mode
   attachInterrupt(digitalPinToInterrupt(TRIGGER_PIN), detectsMovement, RISING);
@@ -219,13 +215,6 @@ void setup()
 
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
-
-  Tasks.add<rainFall>("rainFall")
-      ->setClient(&client)
-      ->startFps(0.1);
-
-  Tasks.add<outPut>("output")
-      ->startFps(0.1);
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(200, "text/plain", "Garden-Service"); });
@@ -263,9 +252,6 @@ bool reconnect()
 void loop()
 {
   static unsigned long lastMillis = millis();
-  static bool TriggerState = digitalRead(TRIGGER_PIN);
-
-  Tasks.update();
 
   if (!client.connected())
   {
@@ -273,17 +259,14 @@ void loop()
   }
   client.loop();
 
-  if (digitalRead(TRIGGER_PIN) != TriggerState)
-  {
-    TriggerState = digitalRead(TRIGGER_PIN);
-    rain_counter++;
-    client.publish("outGarden/rainSensor/trip", "1");
-  }
-
   if (millis() - lastMillis >= 1000)
   {
+    client.publish("outGarden/pool_pump/state", String(poolPump_state).c_str());
+    client.publish("outGarden/watering_valve/state", String(watering_valve_state).c_str());
+    client.publish("outGarden/poolwater_valve/state", String(poolwater_valve_state).c_str());
+    
     digitalWrite(LED_BUILTIN, MAIN_LED_STATE);
-    MAIN_LED_STATE =! MAIN_LED_STATE;
+    MAIN_LED_STATE = !MAIN_LED_STATE;
     lastMillis = millis();
   }
 } /*--------------------------------------------------------------------------*/

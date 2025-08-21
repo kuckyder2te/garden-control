@@ -15,23 +15,16 @@
 #include <PubSubClient.h>
 #include "..\lib\def.h"
 
-namespace interface
-{
-    typedef struct
-    {
-        bool poolPump_state;        // Turns the pool pump on or off
-        bool watering_valve_state;  // Opens the valve for garden irrigation
-        bool poolwater_valve_state; // Opens the valve for filling the pool
-    } model_t;
-}
+bool poolPump_state;        // Turns the pool pump on or off
+bool watering_valve_state;  // Opens the valve for garden irrigation
+bool poolwater_valve_state; // Opens the valve for filling the pool
 
 extern char msg[50];
 extern PubSubClient client;
-extern interface::model_t *interface_model;
 
 void pont_pump(bool option)
 {
-    interface_model->poolPump_state = option;
+    poolPump_state = option;
     if (option)
     {
         Serial.println("Pool Pump ON");
@@ -49,7 +42,7 @@ void pont_pump(bool option)
 
 void watering_valve(bool option)
 {
-    interface_model->watering_valve_state = option;
+    watering_valve_state = option;
     if (option)
     {
         Serial.println("Watering Valve ON");
@@ -67,7 +60,7 @@ void watering_valve(bool option)
 
 void poolwater_valve(bool option)
 {
-    interface_model->poolwater_valve_state = option;
+    poolwater_valve_state = option;
     if (option)
     {
         Serial.println("Pool Water Valve ON");

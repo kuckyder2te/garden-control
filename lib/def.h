@@ -16,8 +16,9 @@
 
 
 #define POOL_PUMP  5            // D1
+#define POOLWATER_VALVE  4     // D2
 
+#define WATERING_VALVE  14     // D5 
 
-#define WATERING_VALVE  13      // D7 
-#define POOLWATER_VALVE  12     // D6
-#define TRIGGER_PIN 14          // D5
+#define TRIGGER_PIN 13          // D7
+#define TRIGGER_LED 12          // D6

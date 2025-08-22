@@ -6,7 +6,6 @@ Project:   Garden Control
 */
 
 #include <Arduino.h>
-// #include <TaskManager.h>
 #include <ESP8266WiFi.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
@@ -16,14 +15,18 @@ Project:   Garden Control
 #include "..\lib\interface.h"
 #include "..\lib\secrets.h"
 #include "..\lib\def.h"
+#include "..\lib\Rainfall.h"
 
 const char *ssid = SID;
 const char *password = PW;
 const char *mqtt_server = MQTT;
 
+const char *mmPerSquareMeter = "0.094175";
+
 WiFiClient espClient;
 PubSubClient client(espClient);
 JsonDocument doc;
+Rainfall rainfall;
 
 unsigned long lastMsg = 0;
 #define MSG_BUFFER_SIZE (50)
@@ -31,7 +34,7 @@ char msg[MSG_BUFFER_SIZE];
 
 bool MAIN_LED_STATE = false;
 
-volatile uint16 rain_counter = 0;
+uint16 rain_counter = 0;
 
 // ----- OTA begin --------
 #include <ElegantOTA.h>
@@ -178,9 +181,13 @@ void callback(char *topic, byte *payload, unsigned int length)
 IRAM_ATTR void detectsMovement()
 {
   Serial.println("MOTION DETECTED!!!");
-  digitalWrite(LED_BUILTIN, HIGH);
-  rain_counter++;
-  digitalWrite(LED_BUILTIN, LOW);
+  digitalWrite(TRIGGER_LED, HIGH);
+
+  rainfall.getWert();
+
+  client.publish("outGarden/pool_pump/state", mmPerSquareMeter); // Den Wert übergeben, oder eine '1' für einen Zähler
+
+  digitalWrite(TRIGGER_LED, LOW);
 
 } /*--------------------------------------------------------------------------*/
 
@@ -205,6 +212,9 @@ void setup()
 
   // Set motionSensor pin as interrupt, assign interrupt function and set RISING mode
   attachInterrupt(digitalPinToInterrupt(TRIGGER_PIN), detectsMovement, RISING);
+
+  pinMode(TRIGGER_PIN, OUTPUT);
+  digitalWrite(TRIGGER_LED, OUTPUT);
 
   Serial.println();
   Serial.println("Garden control is started");
@@ -264,8 +274,9 @@ void loop()
     client.publish("outGarden/pool_pump/state", String(poolPump_state).c_str());
     client.publish("outGarden/watering_valve/state", String(watering_valve_state).c_str());
     client.publish("outGarden/poolwater_valve/state", String(poolwater_valve_state).c_str());
-    
+
     digitalWrite(LED_BUILTIN, MAIN_LED_STATE);
+    digitalWrite(TRIGGER_LED, MAIN_LED_STATE);
     MAIN_LED_STATE = !MAIN_LED_STATE;
     lastMillis = millis();
   }

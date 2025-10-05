@@ -4,9 +4,10 @@
     Author: Wilhelm Kuckelsberg
     Description: Definition of PINs
 
-    Useful PINs
+    Usable PINs
     D1  GPIO5
     D2  GPIO6
+    D3  GPIO0
     D5  GPIO14
     D6  GPIO12
     D7  GPIO13
@@ -15,10 +16,10 @@
 
 
 
-#define POOL_PUMP  5            // D1
+#define POOL_PUMP  5           // D1
 #define POOLWATER_VALVE  4     // D2
+#define WATERING_TERRACE  14   // D5 
+#define WATERING_GARDEN  12    // D6
+#define TRIGGER_PIN 13         // D7
 
-#define WATERING_VALVE  14     // D5 
-
-#define TRIGGER_PIN 13          // D7
-#define TRIGGER_LED 12          // D6
+#define ONE_WIRE_BUS 0         // D3

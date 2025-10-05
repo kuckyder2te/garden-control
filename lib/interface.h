@@ -15,47 +15,66 @@
 #include <PubSubClient.h>
 #include "..\lib\def.h"
 
-bool poolPump_state;        // Turns the pool pump on or off
-bool watering_valve_state;  // Opens the valve for garden irrigation
-bool poolwater_valve_state; // Opens the valve for filling the pool
+bool poolPump_state;          // Turns the pool pump on or off
+bool watering_terrace_state;  // Opens the valve for garden irrigation
+bool watering_garden_state;   // Opens the valve for garden irrigation
+bool poolwater_valve_state;   // Opens the valve for filling the pool
 
 extern char msg[50];
 extern PubSubClient client;
 
-void pont_pump(bool option)
+void pool_pump(bool option)
 {
     poolPump_state = option;
     if (option)
     {
         Serial.println("Pool Pump ON");
-        digitalWrite(POOL_PUMP, LOW);
+        digitalWrite(POOL_PUMP, HIGH);
     }
     else
     {
         Serial.println("Pool Pump OFF");
-        digitalWrite(POOL_PUMP, HIGH);
+        digitalWrite(POOL_PUMP, LOW);
     }
     msg[0] = (option ? '1' : '0');
     msg[1] = 0;
     client.publish("outGarden/pool_pump/state", msg);
 } /*--------------------------------------------------------------------------*/
 
-void watering_valve(bool option)
+void watering_terrace(bool option)
 {
-    watering_valve_state = option;
+    watering_terrace_state = option;
     if (option)
     {
-        Serial.println("Watering Valve ON");
-        digitalWrite(WATERING_VALVE, LOW);
+        Serial.println("Watering terrace ON");
+        digitalWrite(WATERING_TERRACE, HIGH);
     }
     else
     {
-        Serial.println("Watering Valve OFF");
-        digitalWrite(WATERING_VALVE, HIGH);
+        Serial.println("Watering terrace OFF");
+        digitalWrite(WATERING_TERRACE, LOW);
     }
     msg[0] = (option ? '1' : '0');
     msg[1] = 0; // String end
-    client.publish("outGarden/watering_valve/state", msg);
+    client.publish("outGarden/watering_terrace/state", msg);
+} /*--------------------------------------------------------------------------*/
+
+void watering_garden(bool option)
+{
+    watering_garden_state = option;
+    if (option)
+    {
+        Serial.println("Watering garden ON");
+        digitalWrite(WATERING_GARDEN, HIGH);
+    }
+    else
+    {
+        Serial.println("Watering garden OFF");
+        digitalWrite(WATERING_GARDEN, LOW);
+    }
+    msg[0] = (option ? '1' : '0');
+    msg[1] = 0; // String end
+    client.publish("outGarden/watering_garden/state", msg);
 } /*--------------------------------------------------------------------------*/
 
 void poolwater_valve(bool option)
@@ -64,12 +83,12 @@ void poolwater_valve(bool option)
     if (option)
     {
         Serial.println("Pool Water Valve ON");
-        digitalWrite(POOLWATER_VALVE, LOW);
+        digitalWrite(POOLWATER_VALVE, HIGH);
     }
     else
     {
         Serial.println("Pool Water Valve OFF");
-        digitalWrite(POOLWATER_VALVE, HIGH);
+        digitalWrite(POOLWATER_VALVE, LOW);
     }
     msg[0] = (option ? '1' : '0');
     msg[1] = 0; // String end

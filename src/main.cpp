@@ -11,17 +11,19 @@ Project:   Garden Control
 #include <ESPAsyncWebServer.h>
 #include <PubSubClient.h>
 #include <Wire.h>
+#include <DallasTemperature.h>
 #include <ArduinoJson.h>
 #include "..\lib\interface.h"
 #include "..\lib\secrets.h"
 #include "..\lib\def.h"
-#include "..\lib\Rainfall.h"
+#include "..\lib\rainfall.h"
+#include "..\lib\temperature.h"
 
 const char *ssid = SID;
 const char *password = PW;
 const char *mqtt_server = MQTT;
 
-const char *mmPerSquareMeter = "0.094175";
+//const char *mmPerSquareMeter = "0.094175";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -128,26 +130,41 @@ void callback(char *topic, byte *payload, unsigned int length)
         {
         case '0': // false
           // Pump off
-          pont_pump(false);
+          pool_pump(false);
           break;
         case '1':
           // Pump on
-          pont_pump(true);
+          pool_pump(true);
           break;
         default:
           // Warning !! Undefined payload or not 1/0
           break;
         }
       }
-      else if (rootStr == "watering_valve")
+      else if (rootStr == "watering_terrace")
       {
         switch ((char)payload[0])
         {
         case '0':
-          watering_valve(false);
+          watering_terrace(false);
           break;
         case '1':
-          watering_valve(true);
+          watering_terrace(true);
+          break;
+        default:
+          // Warning !! Undefined payload or not 1/0
+          break;
+        }
+      }
+      else if (rootStr == "watering_garden")
+      {
+        switch ((char)payload[0])
+        {
+        case '0':
+          watering_garden(false);
+          break;
+        case '1':
+          watering_garden(true);
           break;
         default:
           // Warning !! Undefined payload or not 1/0
@@ -177,20 +194,6 @@ void callback(char *topic, byte *payload, unsigned int length)
   }
 } /*--------------------------------------------------------------------------*/
 
-// Checks if motion was detected, sets LED HIGH and starts a timer
-IRAM_ATTR void detectsMovement()
-{
-  Serial.println("MOTION DETECTED!!!");
-  digitalWrite(TRIGGER_LED, HIGH);
-
-  rainfall.getWert();
-
-  client.publish("outGarden/pool_pump/state", mmPerSquareMeter); // Den Wert übergeben, oder eine '1' für einen Zähler
-
-  digitalWrite(TRIGGER_LED, LOW);
-
-} /*--------------------------------------------------------------------------*/
-
 void setup()
 {
   delay(500);
@@ -199,22 +202,11 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
 
-  pinMode(POOL_PUMP, OUTPUT_OPEN_DRAIN);
-  digitalWrite(POOL_PUMP, HIGH);
-
-  pinMode(WATERING_VALVE, OUTPUT_OPEN_DRAIN);
-  digitalWrite(WATERING_VALVE, HIGH);
-
-  pinMode(POOLWATER_VALVE, OUTPUT_OPEN_DRAIN);
-  digitalWrite(POOLWATER_VALVE, HIGH);
-
+  pinMode(POOL_PUMP, OUTPUT);
+  pinMode(WATERING_TERRACE, OUTPUT);
+  pinMode(WATERING_GARDEN, OUTPUT);
+  pinMode(POOLWATER_VALVE, OUTPUT);
   pinMode(TRIGGER_PIN, INPUT_PULLUP);
-
-  // Set motionSensor pin as interrupt, assign interrupt function and set RISING mode
-  attachInterrupt(digitalPinToInterrupt(TRIGGER_PIN), detectsMovement, RISING);
-
-  pinMode(TRIGGER_PIN, OUTPUT);
-  digitalWrite(TRIGGER_LED, OUTPUT);
 
   Serial.println();
   Serial.println("Garden control is started");
@@ -226,6 +218,15 @@ void setup()
   client.setServer(mqtt_server, 1883);
   client.setCallback(callback);
 
+  watering_terrace(false);
+  watering_garden(false);
+  poolwater_valve(false);
+  pool_pump(false);
+
+  Tasks.add<temperature>("temperature")
+      ->setClient(&client)
+      ->startFps(0.017); // /Minute
+
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(200, "text/plain", "Garden-Service"); });
 
@@ -233,6 +234,7 @@ void setup()
   ElegantOTA.onStart(onOTAStart);
   ElegantOTA.onProgress(onOTAProgress);
   ElegantOTA.onEnd(onOTAEnd);
+  ElegantOTA.setAutoReboot(true);
   server.begin();
   Serial.println("HTTP server started");
 
@@ -247,7 +249,7 @@ bool reconnect()
   if (client.connect(clientId.c_str()))
   {
     Serial.println("connected");
-    client.publish("outGarden", "{\"msg\":\"Reconnect: Pool Pump and Valves\"}");
+    client.publish("outGarden", "{\"msg\":\"Reconnect: Pool pump and irrigation\"}");
     client.subscribe("inGarden/#");
     return true;
   }
@@ -262,6 +264,8 @@ bool reconnect()
 void loop()
 {
   static unsigned long lastMillis = millis();
+  ElegantOTA.loop();
+  Tasks.update();
 
   if (!client.connected())
   {
@@ -269,14 +273,19 @@ void loop()
   }
   client.loop();
 
+  if (rainfall.update())
+  {
+    client.publish("outGarden/rainSensor/trip", "{\"trip\":true}"); // Den Wert übergeben, oder eine '1' für einen Zähler
+  }
+
   if (millis() - lastMillis >= 1000)
   {
     client.publish("outGarden/pool_pump/state", String(poolPump_state).c_str());
-    client.publish("outGarden/watering_valve/state", String(watering_valve_state).c_str());
+    client.publish("outGarden/watering_terrace/state", String(watering_terrace_state).c_str());
+    client.publish("outGarden/watering_garden/state", String(watering_garden_state).c_str());
     client.publish("outGarden/poolwater_valve/state", String(poolwater_valve_state).c_str());
 
     digitalWrite(LED_BUILTIN, MAIN_LED_STATE);
-    digitalWrite(TRIGGER_LED, MAIN_LED_STATE);
     MAIN_LED_STATE = !MAIN_LED_STATE;
     lastMillis = millis();
   }

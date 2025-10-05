@@ -227,8 +227,22 @@ void setup()
       ->setClient(&client)
       ->startFps(0.017); // /Minute
 
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(200, "text/plain", "Garden-Service"); });
+  // server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+  //           { request->send(200, "text/plain", "Garden-Service"); });
+
+  // Route definieren  code von ChatGPT
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    // Zeit holen
+    struct tm timeinfo;
+    getLocalTime(&timeinfo);
+    char timeString[30];
+    strftime(timeString, sizeof(timeString), "%Y-%m-%d %H:%M:%S", &timeinfo);
+
+    // Antwort mit Zeitstempel
+    String message = "Garden-Service ";
+    message += timeString;
+    request->send(200, "text/plain", message);
+  });
 
   ElegantOTA.begin(&server); // Start ElegantOTA
   ElegantOTA.onStart(onOTAStart);

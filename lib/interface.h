@@ -82,12 +82,12 @@ void poolwater_valve(bool option)
     poolwater_valve_state = option;
     if (option)
     {
-        Serial.println("Pool Water Valve ON");
+        Serial.println("Poolwater Valve ON");
         digitalWrite(POOLWATER_VALVE, HIGH);
     }
     else
     {
-        Serial.println("Pool Water Valve OFF");
+        Serial.println("Poolwater Valve OFF");
         digitalWrite(POOLWATER_VALVE, LOW);
     }
     msg[0] = (option ? '1' : '0');

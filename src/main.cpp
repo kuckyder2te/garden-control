@@ -23,7 +23,7 @@ const char *ssid = SID;
 const char *password = PW;
 const char *mqtt_server = MQTT;
 
-//const char *mmPerSquareMeter = "0.094175";
+// const char *mmPerSquareMeter = "0.094175";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -227,22 +227,19 @@ void setup()
       ->setClient(&client)
       ->startFps(0.017); // /Minute
 
+  // Route für aktuelle-Uhrzeit
   // server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
   //           { request->send(200, "text/plain", "Garden-Service"); });
 
-  // Route definieren  code von ChatGPT
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-    // Zeit holen
-    struct tm timeinfo;
-    getLocalTime(&timeinfo);
-    char timeString[30];
-    strftime(timeString, sizeof(timeString), "%Y-%m-%d %H:%M:%S", &timeinfo);
-
-    // Antwort mit Zeitstempel
-    String message = "Garden-Service ";
-    message += timeString;
-    request->send(200, "text/plain", message);
-  });
+  // Route mit Build-Datum/-Uhrzeit   code von ChatGPT
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+    String message = "Garden-Service (Build: ";
+    message += __DATE__; // Kompilierdatum, z. B. "Oct  5 2025"
+    message += " ";
+    message += __TIME__; // Kompilierzeit, z. B. "14:27:36"
+    message += ")";
+    request->send(200, "text/plain", message); });
 
   ElegantOTA.begin(&server); // Start ElegantOTA
   ElegantOTA.onStart(onOTAStart);

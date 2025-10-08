@@ -14,7 +14,7 @@
 #include <PubSubClient.h>
 #include "..\lib\def.h"
 
-OneWire oneWire(ONE_WIRE_BUS);
+OneWire oneWire(DALLAS);
 DallasTemperature sensors(&oneWire);
 
 class temperature : public Task::Base
@@ -50,7 +50,9 @@ public:
         {
             sprintf(msg, "{ \"value\":%.1f }", temperatureGround);
             _client->publish("outGarden/temperaturePool", msg);
-            printf("Temperature in ground %0.1f", temperatureGround);
+
+            sprintf(msg,"Temperature in ground %0.1f", temperatureGround);
+            Serial.println(msg);
         }
         else
         {

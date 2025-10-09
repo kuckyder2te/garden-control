@@ -43,7 +43,7 @@ public:
 
     virtual void update() override
     {
-        sensors.requestTemperatures(); // Send the command to get temperatures
+        sensors.requestTemperatures();
         temperatureGround = sensors.getTempCByIndex(0);
 
         if (temperatureGround != DEVICE_DISCONNECTED_C)

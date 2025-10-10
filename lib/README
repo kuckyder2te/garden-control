@@ -5,6 +5,18 @@
 
 # 2 + Greisinger 610852 GMV 191 Magnetventil
 
+# - diameter of raingauge is about 130mm, r = 65mm, 
+# - new surface 13.266mm^2 ~ 132,66cm^ ~ 0,013266^m
+
+# - 1 double Klick = 4ml
+
+# Messergebnisse
+# -62 double Klicks ~ 304g
+
+# -Faktor  132,66cm² zu 1,0m² = 75,38
+# -4ml per Dipperchange 4ml * 75,38 = 301,122 / 1000 = 0,30152mm/m²
+
+
 
 This directory is intended for project specific (private) libraries.
 PlatformIO will compile them to static libraries and link into executable file.

@@ -1,63 +1,60 @@
-/*
-    File name: temperature.h
-    Date: 2025.01.07
-    Author: Wilhelm Kuckelsberg
-    Description: Temperature measurement with Dallas DS18B20
-*/
-
 #pragma once
-#ifndef TEMPERATURE_TASK_H
-#define TEMPERATURE_TASK_H
-
+/// @cond
 #include <Arduino.h>
+#define LOCAL_DEBUG
+#include "myLogger.h"
+/// @endcond
+
 #include <TaskManager.h>
-#include <PubSubClient.h>
-#include "def.h"
+#include "../network.h"
+#include <Wire.h>
+#include <DallasTemperature.h>
 
-OneWire oneWire(DALLAS);
-DallasTemperature sensors(&oneWire);
+extern Network *_network;
 
-class temperature : public Task::Base
+namespace Services
 {
-    PubSubClient *_client;
-    char msg[30];
-    float temperatureGround;
-
-public:
-    temperature(const String &name)
-        : Task::Base(name)
+    class Temperature : public Task::Base
     {
-    }
+        OneWire *_interface;
+        DallasTemperature *_sensor;
+        char _msg[30];
+        float _temperatureGround;
 
-    temperature *setClient(PubSubClient *client)
-    {
-        _client = client;
-        return this;
-    }
-
-    virtual void begin() override
-    {
-        Serial.println("Dallas Temperature IC Control Library Demo");
-        sensors.begin();
-    }
-
-    virtual void update() override
-    {
-        sensors.requestTemperatures();
-        temperatureGround = sensors.getTempCByIndex(0);
-
-        if (temperatureGround != DEVICE_DISCONNECTED_C)
+    public:
+        Temperature(const String &name) : Task::Base(name)
         {
-            sprintf(msg, "{ \"value\":%.1f }", temperatureGround);
-            _client->publish("outGarden/temperaturePool", msg);
+            LOGGER_NOTICE("Create temperature task");
+        }
 
-            sprintf(msg,"Temperature in ground %0.1f", temperatureGround);
-            Serial.println(msg);
-        }
-        else
+        virtual void begin() override
         {
-            Serial.println("Error: Could not read temperature data");
+            LOGGER_NOTICE("Dallas Temperature IC Control Library Demo");            
         }
-    }
-};
-#endif // TEMPERATURE_TASK_H
+        
+        Temperature *init(const uint8_t DallasPin){
+            LOGGER_VERBOSE("enter ...");
+            _interface = new OneWire(DallasPin);
+            _sensor = new DallasTemperature(_interface);
+            _sensor->begin();
+            LOGGER_VERBOSE("leave ...");
+            return this;
+        }
+
+        virtual void update() override
+        {
+            _sensor->requestTemperatures(); // Send the command to get temperatures
+            _temperatureGround = _sensor->getTempCByIndex(0);
+
+            if (_temperatureGround != DEVICE_DISCONNECTED_C)
+            {
+                sprintf(_msg, "{ \"value\":%.1f }", _temperatureGround);
+                _network->pubMsg("outGarden/temperatureGround", _msg);
+            }
+            else
+            {
+                LOGGER_ERROR("Error: Could not read temperature data");
+            }
+        }
+    };
+} // End namespace Services

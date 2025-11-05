@@ -3,8 +3,6 @@
 # diameter of raingauge is about 130mm, r = 65mm, surface = pi*r^2 = 132.73 cm^2
 # therefore per m^2 (=10000cm^2) we have a factor of about 75.34
 
-# 2 + Greisinger 610852 GMV 191 Magnetventil
-
 # - diameter of raingauge is about 130mm, r = 65mm, 
 # - new surface 13.266mm^2 ~ 132,66cm^ ~ 0,013266^m
 

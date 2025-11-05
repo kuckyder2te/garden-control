@@ -4,26 +4,54 @@ Author:    Stefan Scholz / Wilhelm Kuckelsberg
 Date:      2024.10.10
 Project:   Garden Control
 */
-
+///@cond
 #include <Arduino.h>
-#include <ESP8266WiFi.h>
-#include <ESPAsyncTCP.h>
-#include <ESPAsyncWebServer.h>
-#include <PubSubClient.h>
-#include <Wire.h>
-#include <DallasTemperature.h>
-#include <ArduinoJson.h>
-#include "..\lib\interface.h"
-#include "..\lib\secrets.h"
-#include "..\lib\def.h"
-#include "..\lib\rainfall.h"
-#include "..\lib\temperature.h"
+#include <TaskManager.h>
+#include "def.h"
 
+#define LOCAL_DEBUG
+char logBuf[DEBUG_MESSAGE_BUFFER_SIZE];
+#include "../include/myLogger.h"
+
+#include "../include/network.h"
+#include "../include/messageBroker.h"
+
+// #include <ESP8266WiFi.h>
+// #include <ESPAsyncTCP.h>
+// #include <ESPAsyncWebServer.h>
+// #include <PubSubClient.h>
+// #include <Wire.h>
+#include <DallasTemperature.h>
+
+//#include "../lib/interface.h"
+#include "../include/services/rainfall.h"
+#include "../include/services/valve_garden.h"
+#include "../include/services/valve_terrace.h"
+#include "../include/services/valve_rinse.h"
+
+#include <ArduinoJson.h>
+#include "secrets.h"
+/// @endcond
+
+Network *_network;
+JsonDocument doc;
+
+HardwareSerial *TestOutput = &Serial;
+HardwareSerial *DebugOutput = &Serial;
+
+MessageBroker msgBroker;
+
+Services::Valve_garden *ValveGarden;
+//Services::Pump_heat *PumpHeat;
+
+unsigned long lastMsg = 0;
+#define MSG_BUFFER_SIZE (50)
+char msg[MSG_BUFFER_SIZE];
+
+/*
 const char *ssid = SID;
 const char *password = PW;
 const char *mqtt_server = MQTT;
-
-// const char *mmPerSquareMeter = "0.094175";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -37,8 +65,9 @@ char msg[MSG_BUFFER_SIZE];
 bool MAIN_LED_STATE = false;
 
 uint16 rain_counter = 0;
-
+*/
 // ----- OTA begin --------
+/*
 #include <ElegantOTA.h>
 
 AsyncWebServer server(80);
@@ -71,7 +100,8 @@ void onOTAEnd(bool success)
   }
 }
 // ----- OTA end --------
-
+*/
+/*
 void setup_wifi()
 {
   delay(10);
@@ -95,7 +125,7 @@ void setup_wifi()
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 } /*--------------------------------------------------------------------------*/
-
+/*
 void callback(char *topic, byte *payload, unsigned int length)
 {
   Serial.print("Message arrived [");
@@ -110,16 +140,13 @@ void callback(char *topic, byte *payload, unsigned int length)
 
   String topicStr(topic); // macht aus dem Topic ein String -> topicStr
   if (topicStr.indexOf('/') >= 0)
-  /*prüft ob die Nachricht ein / enthält was ja den Pfad des Topics aufteilt
-  und mindestens eins sollte bei inPump/Egon ja drin sein
-  */
+  
+  
   {
     // Serial.print("topic = ");Serial.println(topic);
     //  The topic includes a '/', we'll try to read the number of bottles from just after that
     topicStr.remove(0, topicStr.indexOf('/') + 1);
-    /*
-      löscht inPump/ so dass in topicStr nur noch Egon übrig bleibt
-    */
+  
     if (topicStr.indexOf('/') >= 0)
     {
       String rootStr = topicStr.substring(0, topicStr.indexOf('/'));
@@ -192,65 +219,35 @@ void callback(char *topic, byte *payload, unsigned int length)
       }
     }
   }
-} /*--------------------------------------------------------------------------*/
-
+} 
+*/
 void setup()
 {
-  delay(500);
-  Serial.begin(115200);
+  delay(2000);
+  DebugOutput->begin(DEBUG_SPEED);
+  Logger::setOutputFunction(&MyLoggerOutput::localLogger);
+  Logger::setLogLevel(Logger::DEBUG); // Muss immer einen Wert in platformio.ini haben (SILENT)
+  delay(500);                         // For switching on Serial Monitor
+  LOGGER_NOTICE_FMT("************************* Garden control (%s) *************************", __TIMESTAMP__);
+  LOGGER_NOTICE("Start building Poolservice");
 
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, LOW);
+  _network = new Network(SID, PW, HOSTNAME, MQTT, MessageBroker::callback);
+  _network->begin();
 
-  pinMode(POOL_PUMP, OUTPUT);
-  pinMode(WATERING_TERRACE, OUTPUT);
-  pinMode(WATERING_GARDEN, OUTPUT);
-  pinMode(POOLWATER_VALVE, OUTPUT);
-  pinMode(TRIGGER_PIN, INPUT_PULLUP);
+  /*Valves*/
+   ValveGarden = new Services::Valve_garden(VALVE_GARDEN, 200, 10000);
+  // PumpHCl = new Services::Pump_hcl(HCL_PUMP, HCL_MON, true);
+  // PumpAlgizid = new Services::Pump_algizid(ALGIZID_PUMP, ALGIZID_MON, true);
 
-  Serial.println();
-  Serial.println("Garden control is started");
-  String thisBoard = ARDUINO_BOARD;
-  Serial.println(thisBoard);
+  // Tasks.add<Services::Temperature>("temperature")
+  //     ->init(DALLAS)
+  //     ->startFps(0.017); // ~ 1 minute
 
-  setup_wifi();
-
-  client.setServer(mqtt_server, 1883);
-  client.setCallback(callback);
-
-  watering_terrace(false);
-  watering_garden(false);
-  poolwater_valve(false);
-  pool_pump(false);
-
-  Tasks.add<temperature>("temperature")
-      ->setClient(&client)
-      ->startFps(0.017); // /Minute
-
-  // Route für aktuelle-Uhrzeit
-  // server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-  //           { request->send(200, "text/plain", "Garden-Service"); });
-
-  // Route mit Build-Datum/-Uhrzeit   code von ChatGPT
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-    String message = "Garden-Service (Build: ";
-    message += __DATE__; // Kompilierdatum, z. B. "Oct  5 2025"
-    message += " ";
-    message += __TIME__; // Kompilierzeit, z. B. "14:27:36"
-    message += ")";
-    request->send(200, "text/plain", message); });
-
-  ElegantOTA.begin(&server); // Start ElegantOTA
-  ElegantOTA.onStart(onOTAStart);
-  ElegantOTA.onProgress(onOTAProgress);
-  ElegantOTA.onEnd(onOTAEnd);
-  ElegantOTA.setAutoReboot(true);
-  server.begin();
-  Serial.println("HTTP server started");
+  msgBroker.printTopics();
+  LOGGER_NOTICE("Finished building Poolservice. Will enter infinite loop");
 
 } /*--------------------------------------------------------------------------*/
-
+/*
 bool reconnect()
 {
   Serial.print("Attempting MQTT connection...");
@@ -270,14 +267,14 @@ bool reconnect()
     Serial.print(client.state());
     return false;
   }
-} /*--------------------------------------------------------------------------*/
-
+} 
+*/
 void loop()
 {
-  static unsigned long lastMillis = millis();
-  ElegantOTA.loop();
-  Tasks.update();
+  _network->update();
 
+  Tasks.update();
+/*
   if (!client.connected())
   {
     reconnect();
@@ -300,4 +297,5 @@ void loop()
     MAIN_LED_STATE = !MAIN_LED_STATE;
     lastMillis = millis();
   }
+    */
 } /*--------------------------------------------------------------------------*/

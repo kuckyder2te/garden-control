@@ -5,7 +5,7 @@
 #include "myLogger.h"
 /// @endcond
 
-#include <WiFi.h>
+#include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 #include <ESPAsyncWebServer.h>
@@ -74,7 +74,7 @@ public:
 
         _web_server->on("/", HTTP_GET, [](AsyncWebServerRequest *request)
                         {
-            String message = "Poolservice (Build: ";
+            String message = "Garden corton (Build: ";
             message += __DATE__; // Kompilierdatum, z. B. "Oct  5 2025"
             message += " ";
             message += __TIME__; // Kompilierzeit, z. B. "14:27:36"

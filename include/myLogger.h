@@ -10,7 +10,7 @@ extern HardwareSerial* DebugOutput;
 
 #if defined LOCAL_DEBUG || defined GLOBAL_DEBUG
 //#if (defined LOCAL_DEBUG || defined GLOBAL_DEBUG) && defined DEBUG
-extern char logBuf[MAX_PAYLOAD_SIZE];
+extern char logBuf[DEBUG_MESSAGE_BUFFER_SIZE];
     #define LOGGER_VERBOSE_FMT(fmt,...) sprintf(logBuf,fmt, __VA_ARGS__);LOGGER_VERBOSE(logBuf)
     #define LOGGER_NOTICE(msg) Logger::notice(__PRETTY_FUNCTION__, msg)
     #define LOGGER_NOTICE_CHK(chk1,chk2,msg) if(chk1!=chk2){chk2 = chk1;Logger::notice(__PRETTY_FUNCTION__, msg);}
@@ -62,33 +62,5 @@ public:
         DebugOutput->println(message);
     }
 };
-
-#include <Base.h>
-#include <Client.h>
-extern Radio::Client CarRadio;
-
-void localLogger(Logger::Level level, const char *module, const char *message)
-{
-  // Serial.println(message);
-  if (level == 0)
-  {
-    Serial.print(module);
-    Serial.print(" - ");
-    Serial.println(message);
-  }
-  else
-  {
-    JsonDocument log_msg;
-#ifdef LOG_TIMESTAMP
-    log_msg["time"] = millis();
-#endif
-    log_msg["level"] = Logger::asString(level);
-    log_msg["module"] = module;
-    log_msg["payload"] = String(message);
-    serializeJson(log_msg, logBuf);
-    CarRadio.send(0, 'L', logBuf, String(logBuf).length());
-  }
-}
-
 
 #undef LOCAL_DEBUG

@@ -12,7 +12,7 @@
 #include <Arduino.h>
 #include <TaskManager.h>
 #include <PubSubClient.h>
-#include "..\lib\def.h"
+#include "def.h"
 
 OneWire oneWire(DALLAS);
 DallasTemperature sensors(&oneWire);

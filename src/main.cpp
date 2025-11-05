@@ -21,9 +21,8 @@ char logBuf[DEBUG_MESSAGE_BUFFER_SIZE];
 #include <ESPAsyncWebServer.h>
 #include <PubSubClient.h>
 #include <Wire.h>
-#include <DallasTemperature.h>
 
-// #include "../lib/interface.h"
+#include "../include/services/temperature.h"
 #include "../include/services/rainfall.h"
 #include "../include/services/valve_garden.h"
 #include "../include/services/valve_terrace.h"
@@ -56,7 +55,7 @@ void setup()
   Serial.println("Setup");
   DebugOutput->begin(DEBUG_SPEED);
   Logger::setOutputFunction(&MyLoggerOutput::localLogger);
-//  Logger::setLogLevel(Logger::DEBUG); // Muss immer einen Wert in platformio.ini haben (SILENT)
+  Logger::setLogLevel(Logger::SILENT); // Muss immer einen Wert in platformio.ini haben (SILENT)
   delay(500);                         // For switching on Serial Monitor
   LOGGER_NOTICE_FMT("************************* Garden control (%s) *************************", __TIMESTAMP__);
   LOGGER_NOTICE("Start building Garden Control");
@@ -69,9 +68,9 @@ void setup()
   ValveTerrace = new Services::Valve_terrace(VALVE_TERRACE, 200, 10000);
   ValveRinse = new Services::Valve_rinse(VALVE_RINSE, 200, 10000);
 
-  // Tasks.add<Services::Temperature>("temperature")
-  //     ->init(DALLAS)
-  //     ->startFps(0.017); // ~ 1 minute
+  Tasks.add<Services::Temperature>("temperature")
+      ->init(DALLAS)
+      ->startFps(0.017); // ~ 1 minute
 
   msgBroker.printTopics();
   // LOGGER_NOTICE("Finished building Poolservice. Will enter infinite loop");
@@ -83,5 +82,5 @@ void loop()
   Serial.println("loop"); // only for reboot test
   _network->update();
 
-  // Tasks.update();
+   Tasks.update();
 } /*--------------------------------------------------------------------------*/

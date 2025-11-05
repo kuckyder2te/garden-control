@@ -5,46 +5,16 @@
 #include "myLogger.h"
 /// @endcond
 
-#include "../message.h"
-#include "../messageBroker.h"
+// #include "../message.h"
+// #include "../messageBroker.h"
+#include "valve_base.h"
+
 
 namespace Services
 {
-    class Valve_terrace
-    {
-        uint8_t _valve_pin;
-
-    private:
-        class State : public Message
-        {
-            Valve_terrace& _parent;
-        public:
-            State(Valve_terrace& parent, String topic) : Message(topic), _parent(parent) {}
-            bool call(JsonDocument payload);
-        };
-
-    public:
-        Valve_terrace(const uint8_t pump_pin) : _valve_pin(pump_pin)      
-        {
-            LOGGER_NOTICE("Create terrace valve");
-            pinMode(pump_pin, OUTPUT);
-            digitalWrite(pump_pin, LOW);
-            msgBroker.registerMessage(new State(*this,"inGarden/terrace_valve/state"));
-        };
-    };
-    bool Valve_terrace::State::call(JsonDocument payload)
-    {
-        if (payload["state"])
-        {
-            LOGGER_NOTICE("terrace valve ON");
-            digitalWrite(_parent._valve_pin, HIGH);
-        }
-        else
-        {
-            LOGGER_NOTICE("Terrance valve OFF");
-            digitalWrite(_parent._valve_pin, LOW);
-        }
-        _network->pubMsg("outGarden/terrace_valve/state", payload);
-        return payload["state"];
-    };
-}// End namespace Services
+class Valve_terrace : public ValveBase {
+public:
+    Valve_terrace(uint8_t pin, unsigned long debounceMs = 200, unsigned long timeoutMs = 0)
+        : ValveBase(pin, "Garden valve", debounceMs, timeoutMs) {}
+};
+} // namespace Services

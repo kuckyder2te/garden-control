@@ -11,7 +11,7 @@
 
 namespace Services {
 
-class ValveBaseSimple {
+class ValveBase {
 protected:
     uint8_t _pump_pin;
     String  _topic;
@@ -23,9 +23,9 @@ protected:
 
 private:
     class StateMsg : public Message {
-        ValveBaseSimple &_parent;
+        ValveBase &_parent;
     public:
-        StateMsg(ValveBaseSimple &parent, String topic)
+        StateMsg(ValveBase &parent, String topic)
             : Message(topic), _parent(parent) {}
         bool call(JsonDocument payload) override {
             return _parent.onMessage(payload);
@@ -33,7 +33,7 @@ private:
     };
 
 public:
-    ValveBaseSimple(uint8_t pin, const String &topic,
+    ValveBase(uint8_t pin, const String &topic,
                    unsigned long debounceMs = 200,
                    unsigned long timeoutMs = 0)
         : _pump_pin(pin), _topic(topic),
@@ -45,7 +45,7 @@ public:
         msgBroker.registerMessage(new StateMsg(*this, _topic + "/state"));
     }
 
-    virtual ~ValveBaseSimple() = default;
+    virtual ~ValveBase() = default;
 
     // ---------------------------
     // Steuerung & MQTT-Kommandos

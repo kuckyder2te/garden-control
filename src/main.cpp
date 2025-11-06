@@ -10,7 +10,7 @@ Project:   Garden Control
 #include "def.h"
 
 #define LOCAL_DEBUG
-char logBuf[DEBUG_MESSAGE_BUFFER_SIZE];
+
 #include "../include/myLogger.h"
 
 #include "../include/network.h"
@@ -52,14 +52,13 @@ void setup()
 {
   delay(2000);
   Serial.begin(115200);     // only for reboot test
-  Serial.println("Setup");
+  // Serial.println("Setup");
   DebugOutput->begin(DEBUG_SPEED);
   Logger::setOutputFunction(&MyLoggerOutput::localLogger);
-  Logger::setLogLevel(Logger::SILENT); // Muss immer einen Wert in platformio.ini haben (SILENT)
+  Logger::setLogLevel(Logger::DEBUG); // Muss immer einen Wert in platformio.ini haben (SILENT)
   delay(500);                         // For switching on Serial Monitor
-  LOGGER_NOTICE_FMT("************************* Garden control (%s) *************************", __TIMESTAMP__);
-  LOGGER_NOTICE("Start building Garden Control");
-
+  LOGGER_NOTICE_FMT("************************* Garden Service (%s) *************************", __TIMESTAMP__);
+  LOGGER_NOTICE("Start building Garden Service");
   _network = new Network(SID, PW, HOSTNAME, MQTT, MessageBroker::callback);
   _network->begin();
 
@@ -73,13 +72,13 @@ void setup()
       ->startFps(0.017); // ~ 1 minute
 
   msgBroker.printTopics();
-  // LOGGER_NOTICE("Finished building Poolservice. Will enter infinite loop");
+  LOGGER_NOTICE("Finished building Garden Service. Will enter infinite loop");
 
 } /*--------------------------------------------------------------------------*/
 
 void loop()
 {
-  Serial.println("loop"); // only for reboot test
+  // Serial.println("loop"); // only for reboot test
   _network->update();
 
    Tasks.update();

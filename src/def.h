@@ -14,7 +14,7 @@
     A0  ADC0
 */
 
-#define DEBUG_MESSAGE_BUFFER_SIZE 100
+#define DEBUG_MESSAGE_BUFFER_SIZE 200
 #define GLOBAL_BUFFER_SIZE 100
 
 #define POOL_PUMP        5    // D1

@@ -12,6 +12,6 @@ namespace Services
 class Valve_garden : public ValveBase {
 public:
     Valve_garden(uint8_t pin, unsigned long debounceMs = 200, unsigned long timeoutMs = 0)
-        : ValveBase(pin, "Garden valve", debounceMs, timeoutMs) {}
+        : ValveBase(pin, "garden_valve", debounceMs, timeoutMs) {}
 };
 } // namespace Services

@@ -51,8 +51,7 @@ char msg[MSG_BUFFER_SIZE];
 void setup()
 {
   delay(2000);
-  Serial.begin(115200);     // only for reboot test
-  // Serial.println("Setup");
+  Serial.begin(115200);
   DebugOutput->begin(DEBUG_SPEED);
   Logger::setOutputFunction(&MyLoggerOutput::localLogger);
   Logger::setLogLevel(Logger::DEBUG); // Muss immer einen Wert in platformio.ini haben (SILENT)
@@ -61,6 +60,8 @@ void setup()
   LOGGER_NOTICE("Start building Garden Service");
   _network = new Network(SID, PW, HOSTNAME, MQTT, MessageBroker::callback);
   _network->begin();
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW);
 
   /*Valves*/
   ValveGarden = new Services::Valve_garden(VALVE_GARDEN, 200, 10000);
@@ -78,8 +79,17 @@ void setup()
 
 void loop()
 {
-  // Serial.println("loop"); // only for reboot test
+  static unsigned long lastMillis;
+  static bool lastState = LOW;
   _network->update();
 
-   Tasks.update();
-} /*--------------------------------------------------------------------------*/
+  Tasks.update();
+
+  if (millis() - lastMillis >= 1000)    // This can also be used to test the main loop.
+  {
+    digitalWrite(LED_BUILTIN, lastState);
+    lastState =! lastState;
+    lastMillis = millis();
+  }
+}
+ /*--------------------------------------------------------------------------*/

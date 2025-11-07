@@ -13,6 +13,6 @@ namespace Services
 class Valve_rinse : public ValveBase {
 public:
     Valve_rinse(uint8_t pin, unsigned long debounceMs = 200, unsigned long timeoutMs = 0)
-        : ValveBase(pin, "Garden valve", debounceMs, timeoutMs) {}
+        : ValveBase(pin, "rinse_valve", debounceMs, timeoutMs) {}
 };
 } // namespace Services

@@ -9,4 +9,4 @@
 #define PW "mika&emil2023!"
 #define SID "kucky-wlan"
 #define MQTT "kucky-nas"
-#define HOSTNAME "gardencontrol"
+#define HOSTNAME "gardenservice"

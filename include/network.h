@@ -75,7 +75,7 @@ public:
 
         _web_server->on("/", HTTP_GET, [](AsyncWebServerRequest *request)
                         {
-            String message = "poolservice (Build: ";
+            String message = "gardenservice (Build: ";
             message += __DATE__; // Kompilierdatum, z. B. "Oct  5 2025"
             message += " ";
             message += __TIME__; // Kompilierzeit, z. B. "14:27:36"
@@ -146,6 +146,7 @@ private:
             return false;
         }
     } /*--------------------------------------------------------------------------*/
+    
     void wifi_connect()
     {
         WiFi.mode(WIFI_STA);

@@ -24,7 +24,7 @@ public:
     static int debugCount = 0;
     bool impulse = false;
     static unsigned long lastEvent = millis();
-    if (!digitalRead(TRIGGER_PIN) && !lastState)
+    if (!digitalRead(RAINDROP_PIN) && !lastState)
     {
       lastState = true;
       impulse = true;
@@ -34,7 +34,7 @@ public:
     };
     if (millis() - 500 >= lastEvent)
     {
-      if (digitalRead(TRIGGER_PIN))
+      if (digitalRead(RAINDROP_PIN))
       {
         lastState = false;
       }

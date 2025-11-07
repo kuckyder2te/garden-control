@@ -75,7 +75,7 @@ public:
 
         _web_server->on("/", HTTP_GET, [](AsyncWebServerRequest *request)
                         {
-            String message = "Garden corton (Build: ";
+            String message = "poolservice (Build: ";
             message += __DATE__; // Kompilierdatum, z. B. "Oct  5 2025"
             message += " ";
             message += __TIME__; // Kompilierzeit, z. B. "14:27:36"
@@ -129,13 +129,13 @@ private:
     bool mqtt_connect()
     {
         LOGGER_NOTICE("Attempting MQTT connection...");
-        String clientId = "Poolservice";
+        String clientId = "gardenservice";
         clientId += String(random(0xffff), HEX);
 
         if (_mqtt_client->connect(clientId.c_str()))
         {
             LOGGER_NOTICE("connected");
-            _mqtt_client->publish(ROOT_OUT_TOPIC, "{\"msg\":\"Reconnect: Poolservice\"}");
+            _mqtt_client->publish(ROOT_OUT_TOPIC, "{\"msg\":\"Reconnect: gardenservice\"}");
             LOGGER_NOTICE_FMT("subscribed to: %s", ROOT_IN_TOPIC "/#");
             _mqtt_client->subscribe(ROOT_IN_TOPIC "/#");
             return true;

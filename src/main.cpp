@@ -27,6 +27,7 @@ Project:   Garden Control
 #include "../include/services/valve_garden.h"
 #include "../include/services/valve_terrace.h"
 #include "../include/services/valve_rinse.h"
+#include "../include/services/pool_pump.h"
 
 #include <ArduinoJson.h>
 #include "secrets.h"
@@ -43,6 +44,8 @@ MessageBroker msgBroker;
 Services::Valve_garden *ValveGarden;
 Services::Valve_terrace *ValveTerrace;
 Services::Valve_rinse *ValveRinse;
+
+Services::Pool_pump *PoolPump;
 
 unsigned long lastMsg = 0;
 #define MSG_BUFFER_SIZE (50)
@@ -67,6 +70,8 @@ void setup()
   ValveGarden = new Services::Valve_garden(VALVE_GARDEN, 200, 10000);
   ValveTerrace = new Services::Valve_terrace(VALVE_TERRACE, 200, 10000);
   ValveRinse = new Services::Valve_rinse(VALVE_RINSE, 200, 10000);
+
+  PoolPump = new Services::Pool_pump(POOL_PUMP, 200, 5000);  // 5 s timeout
 
   Tasks.add<Services::Temperature>("temperature")
       ->init(DALLAS)

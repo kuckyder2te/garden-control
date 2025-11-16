@@ -1,15 +1,9 @@
 #pragma once
-/*
-    File name. rainfall.h
-    Date: 2025.08.22
-    Author: Wilhelm Kuckelsberg
-    Description: Garden Control
-
-    Measuring the amount of rain per unit of time.
-*/
-
-#ifndef RAINFALL_H
-#define RAINFALL_H
+/// @cond
+#include <Arduino.h>
+#define LOCAL_DEBUG
+#include "myLogger.h"
+/// @endcond
 
 class Rainfall
 {
@@ -29,7 +23,8 @@ public:
       lastState = true;
       impulse = true;
       lastEvent = millis();
-      Serial.print("Rainfall event No ");Serial.println(debugCount);
+      LOGGER_NOTICE_FMT("Rainfall event No: %d", debugCount);
+      // Serial.print("Rainfall event No ");Serial.println(debugCount);
       debugCount++;
     };
     if (millis() - 500 >= lastEvent)
@@ -41,6 +36,4 @@ public:
     }
     return impulse;
   }
-};
-
-#endif // RAINFALL_H
+}; // RAINFALL_H

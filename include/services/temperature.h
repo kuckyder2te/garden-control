@@ -48,7 +48,8 @@ namespace Services
 
             if (_temperatureGround != DEVICE_DISCONNECTED_C)
             {
-                sprintf(_msg, "{ \"value\":%.1f }", _temperatureGround);
+                LOGGER_NOTICE_FMT("Ground temperature = %.1f", _temperatureGround);
+                // sprintf(_msg, "{ \"value\":%.1f }", _temperatureGround);
                 _network->pubMsg("outGarden/temperatureGround", _msg);
             }
             else

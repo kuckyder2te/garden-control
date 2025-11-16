@@ -1,8 +1,6 @@
 /*
     Filename: secrets.h
     Date: 2024.10.06
-    Author: Stephan Scholz
-    Description: Pool Control
 */
 
 #pragma once

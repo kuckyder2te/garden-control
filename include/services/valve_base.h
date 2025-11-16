@@ -8,6 +8,7 @@
 
 #include "../message.h"
 #include "../messageBroker.h"
+#include "def.h"
 
 namespace Services {
 
@@ -34,7 +35,7 @@ private:
 
 public:
     ValveBase(uint8_t pin, const String &topic,
-                   unsigned long debounceMs = 200,
+                   unsigned long debounceMs = DEBOUNCE_TIME,
                    unsigned long timeoutMs = 0)
         : _pump_pin(pin), _topic(topic),
           _debounceMs(debounceMs), _timeoutMs(timeoutMs)

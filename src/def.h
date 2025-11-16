@@ -21,7 +21,7 @@
 #define VALVE_RINSE    4    // D2
 #define RAINDROP_PIN  13    // D7
 
-#define DEBOUNCE_TIME 200   // 200 milli seconds
+#define DEBOUNCE_TIME 200   // 200 milliseconds
 #define TIME_OUT_1  10000   // 10 sec
 
 #define DEBUG_MESSAGE_BUFFER_SIZE 200

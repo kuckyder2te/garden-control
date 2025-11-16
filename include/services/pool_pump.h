@@ -4,12 +4,13 @@
 #define LOCAL_DEBUG
 #include "myLogger.h"
 /// @endcond
-#include "valve_base.h"
+
+#include "actors_base.h"
 
 namespace Services {
-class Pool_pump : public ValveBase {
+class Pool_pump : public ActorsBase {
 public:
     Pool_pump(uint8_t pin, unsigned long debounceMs = 200, unsigned long timeoutMs = 0)
-        : ValveBase(pin, "pool_pump", debounceMs, timeoutMs) {}
+        : ActorsBase(pin, "pool_pump", debounceMs, timeoutMs) {}
 };
 } // namespace Services

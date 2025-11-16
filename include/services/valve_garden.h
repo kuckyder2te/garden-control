@@ -5,13 +5,13 @@
 #include "myLogger.h"
 /// @endcond
 
-#include "valve_base.h"
+#include "actors_base.h"
 
 namespace Services
 {
-class Valve_garden : public ValveBase {
+class Valve_garden : public ActorsBase {
 public:
     Valve_garden(uint8_t pin, unsigned long debounceMs = 200, unsigned long timeoutMs = 0)
-        : ValveBase(pin, "garden_valve", debounceMs, timeoutMs) {}
+        : ActorsBase(pin, "garden_valve", debounceMs, timeoutMs) {}
 };
 } // namespace Services

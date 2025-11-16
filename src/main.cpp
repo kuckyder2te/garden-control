@@ -66,12 +66,13 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
 
-  /*Valves*/
+  /* 12V Valves */
   ValveGarden = new Services::Valve_garden(VALVE_GARDEN, 200, 10000);
   ValveTerrace = new Services::Valve_terrace(VALVE_TERRACE, 200, 10000);
   ValveRinse = new Services::Valve_rinse(VALVE_RINSE, 200, 10000);
 
-  PoolPump = new Services::Pool_pump(POOL_PUMP, 200, 5000);  // 5 s timeout
+  /* 220V Pump */
+  PoolPump = new Services::Pool_pump(POOL_PUMP, 200, 5000); // 5 s timeout
 
   Tasks.add<Services::Temperature>("temperature")
       ->init(DALLAS)
@@ -90,11 +91,18 @@ void loop()
 
   Tasks.update();
 
-  if (millis() - lastMillis >= 1000)    // This can also be used to test the main loop.
+  if (millis() - lastMillis >= 1000) // This can also be used to test the main loop.
   {
+
+    ValveGarden->update();
+    ValveTerrace->update();
+    ValveRinse->update();
+
+    PoolPump->update();
+
     digitalWrite(LED_BUILTIN, lastState);
-    lastState =! lastState;
+    lastState = !lastState;
     lastMillis = millis();
   }
 }
- /*--------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/

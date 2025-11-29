@@ -10,7 +10,7 @@
 namespace Services {
 class Pool_pump : public ActorsBase {
 public:
-    Pool_pump(uint8_t pin, unsigned long debounceMs = 200, unsigned long timeoutMs = 0)
+    Pool_pump(uint8_t pin, unsigned long debounceMs = DEBOUNCE_TIME, unsigned long timeoutMs = 0)
         : ActorsBase(pin, "pool_pump", debounceMs, timeoutMs) {}
 };
-} // namespace Services
+} // end of namespace Services

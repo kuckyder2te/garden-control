@@ -12,16 +12,14 @@
 
 namespace Services
 {
-
     class ActorsBase
     {
     protected:
         uint8_t _pump_pin;
-     //   uint8_t _mon_pin;
         String _topic;
         bool _state = false;
 
-        unsigned long _lastCmd = 0;
+        //unsigned long _lastCmd = 0;
         unsigned long _debounceMs = 200; // Standard value
         unsigned long _timeoutMs = 0;    // 0 = disable
         unsigned long _onSince = 0;      // Time from which the pump is ON
@@ -45,12 +43,10 @@ namespace Services
 
     public:
         ActorsBase(uint8_t pumpPin,
-                 //   uint8_t monPin,
                     const String &topic,
                     unsigned long debounceMs = 200,
                     unsigned long timeoutMs = 0)
             : _pump_pin(pumpPin),
-             // _mon_pin(monPin),
               _topic(topic),
               _debounceMs(debounceMs),
               _timeoutMs(timeoutMs)
@@ -76,7 +72,7 @@ namespace Services
             if (millis() - _lastCmd > DEBOUNCE_TIME)
             {
                 LOGGER_NOTICE_FMT("%s: command debounced (%lums)", _topic.c_str(), millis() - _lastCmd);
-                return true;
+            //    return true;
             }
             _lastCmd = millis();
 

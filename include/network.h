@@ -116,7 +116,6 @@ public:
     bool pubMsg(const char *topic, const JsonDocument payload)
     {
         LOGGER_NOTICE_FMT("%s - %s", topic, payload);
-        // LOGGER_NOTICE_FMT("%s - %s", topic, String(payload["payload"]).c_str());  // Fehler
         String output;
         serializeJson(payload, output);
         String Topic = ROOT_OUT_TOPIC "/";

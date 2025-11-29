@@ -12,7 +12,7 @@ namespace Services
 {
 class Valve_rinse : public ActorsBase {
 public:
-    Valve_rinse(uint8_t pin, unsigned long debounceMs = 200, unsigned long timeoutMs = 0)
+    Valve_rinse(uint8_t pin, unsigned long debounceMs = DEBOUNCE_TIME, unsigned long timeoutMs = 0)
         : ActorsBase(pin, "rinse_valve", debounceMs, timeoutMs) {}
 };
-} // namespace Services
+} // end of namespace Services

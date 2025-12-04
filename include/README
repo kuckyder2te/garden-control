@@ -1,39 +1,114 @@
+# Garden Service
+Controller for pool and garden
 
-This directory is intended for project header files.
+## Overview
+This project is an Arduino-based application for the ESP32 that controls various modules including pumps, LEDs, temperatur sensor, and MQTT network communication. It uses PlatformIO as the build system.
 
-A header file is a file containing C declarations and macro definitions
-to be shared between several project source files. You request the use of a
-header file in your project source file (C, C++, etc) located in `src` folder
-by including it, with the C preprocessing directive `#include'.
+## Features
+- The pool pump is controlled via a schedule and manual on/off switching
+- The pool can be filled.
+- Temperature measurement in the pool and ground
+- Garden watering
+- MQTT communication for remote control
+- Task-based architecture using TaskManager
 
-```src/main.c
+## Hardware
+![Motherboard](/pictures/Motherboard.png)
 
-#include "header.h"
+## Microcontroller
+- ESP32 upesy_wroom
 
-int main (void)
-{
- ...
-}
+## Connectors
+#### J1 - 5V supply
+| PIN | Signal |<br>
+|--1--|--+12V--|<br>
+|--2--|--GND---|<br>
+|--3--|--+5V---|<br>
+
+#### J2 - aux 12V out
+| PIN | Signal |<br>
+|--1--|--+12V--|<br>
+|--2--|--GND---|<br>
+|--3--|--+5V---|<br>
+
+#### J3 - Safety jumper
+| PIN | Signal |<br>
+|--1--|-----|<br>
+|--2--|-----|<br>
+
+#### J4 - 12V In main
+| PIN | Signal |<br>
+|--1--|---J3---|<br>
+|--2--|+12V IN-|<br>
+
+#### J8 - not there
+
+#### J9 - aux I°C not in use
+| PIN | Signal |<br>
+|--1--|--3V3---|<br>
+|--2--|--GND---|<br>
+|--3--|--SCL---|<br>
+|--4--|--SDA---|<br>
+
+#### J11 - Dallas temperature sensor
+|--1--|--3V3---|<br>
+|--2--|-Signal-|<br>
+|--3--|--GND---|<br>
+
+#### Valve Relays
+|...Actor......|....Color.....|<br>
+|....terrace---|--rown/blue---|<br>
+|-----garden---|--grey/red----|<br>
+|--pool füllen-|-green/black--|<br>
+|-----+12V-----|-yellow/white-|<br>
+
+
+## Software Architecture
+The project follows a modular design with the following key components:
+
+- **Task Management**: Using TaskManager for concurrent module operation
+- **Network Communication**: MQTT protocol for remote control
+- **Message Broker**: Centralized message handling system
+
+### Network Configuration (secrets.h)
+```cpp
+#define SID "Your_WiFi_SSID"
+#define PASSWORD "Your_WiFi_Password"
+#define BROKER "MQTT_Broker_IP"
+#define USER "MQTT_Username"
+#define PW "MQTT_Password"
 ```
 
-Including a header file produces the same results as copying the header file
-into each source file that needs it. Such copying would be time-consuming
-and error-prone. With a header file, the related declarations appear
-in only one place. If they need to be changed, they can be changed in one
-place, and programs that include the header file will automatically use the
-new version when next recompiled. The header file eliminates the labor of
-finding and changing all the copies as well as the risk that a failure to
-find one copy will result in inconsistencies within a program.
+### IP Adress
+- Garden 192.168.2.195/update
+- Poolservices 192.168.2.211/update
 
-In C, the usual convention is to give header files names that end with `.h'.
-It is most portable to use only letters, digits, dashes, and underscores in
-header file names, and at most one dot.
+## MQTT Topics
+The system uses the following MQTT topics for communication:
 
-Read more about using header files in official GCC documentation:
+- `inGarden/#` - Incoming commands
+- `outGarden/#` - Outgoing status updates
 
-* Include Syntax
-* Include Operation
-* Once-Only Headers
-* Computed Includes
+### Supported Commands
 
-https://gcc.gnu.org/onlinedocs/cpp/Header-Files.html
+- `inGarden/garden_valve/state` - Control garden valve for watering
+- `inGarden/rinse_valve/state` - Control rinse valve for pool
+- `inGarden/terrace_valve/state` - Control terrace valve for watering
+- `inGarden/pool/state` - Control pool pump
+
+- `inGarden/controller/config` - Controller configuration endpoint
+
+### Debounce and Time out rules
+- The debouncing is always checked after 200 milliseconds bot only the dosingpumps. The debounce time must be checked.
+- The timeout depends on the specific pump. This option applies to all pumps.
+
+### Controller Configuration
+The controller now supports dynamic configuration through MQTT messages. The new configuration endpoint allows sending JSON payloads to `inGarden/controller/config` which will be processed and acknowledged with a response on `outGarden/controller/config`.
+
+## Building and Flashing
+1. Install PlatformIO
+2. Configure your network settings in `src/secrets.h`
+3. Build and upload using PlatformIO
+
+
+

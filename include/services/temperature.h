@@ -19,7 +19,6 @@ namespace Services
         OneWire *_interface;
         DallasTemperature *_sensor;
         char _msg[30];
-        float _temp_current;
 
     public:
         Temperature(const String &name) : Task::Base(name)
@@ -44,43 +43,38 @@ namespace Services
 
         virtual void update() override
         {
-            static float tmin = 1000;
-            static float tmax = -1000;
+            static float _garden_tmin = 1000;
+            static float _garden_tmax = -1000;
 
             _sensor->requestTemperatures();
-            float t = _sensor->getTempCByIndex(0);
+            float _current = _sensor->getTempCByIndex(0);
 
-            if (t == DEVICE_DISCONNECTED_C || t == 85.0)
+            if (_current == DEVICE_DISCONNECTED_C || _current == 85.0)
             {
                 LOGGER_ERROR("Sensor error!");
                 return;
             }
 
-            _temp_current = t;
+            LOGGER_NOTICE_FMT("Garden current: %.1f min = %.1f max = %.1f\n", _current, _garden_tmin, _garden_tmax);
 
-            Serial.printf("TEST: curr=%.1f  min=%.1f  max=%.1f\n", t, tmin, tmax);
-
-            // MIN
-            if (t < tmin)
+            if (_current < _garden_tmin)
             {
-                tmin = t;
-                sprintf(_msg, "{ \"value\":%.1f }", tmin);
-                _network->pubMsg("outGarden/temp_min", _msg);
-                LOGGER_NOTICE_FMT("temp min: %.1f", tmin);
+                _garden_tmin = _current;
+                sprintf(_msg, "{ \"value\":%.1f }", _garden_tmin);
+                _network->pubMsg("outGarden/temp_min_garden", _msg);
+                LOGGER_NOTICE_FMT("temp min: %.1f", _garden_tmin);
             }
 
-            // MAX
-            if (t > tmax)
+            if (_current > _garden_tmax)
             {
-                tmax = t;
-                sprintf(_msg, "{ \"value\":%.1f }", tmax);
-                _network->pubMsg("outGarden/temp_max", _msg);
-                LOGGER_NOTICE_FMT("temp max: %.1f", tmax);
+                _garden_tmax = _current;
+                sprintf(_msg, "{ \"value\":%.1f }", _garden_tmax);
+                _network->pubMsg("outGarden/temp_max_garden", _msg);
+                LOGGER_NOTICE_FMT("temp max: %.1f", _garden_tmax);
             }
 
-            // Always publish current
-            sprintf(_msg, "{ \"value\":%.1f }", t);
-            _network->pubMsg("outGarden/temp_current", _msg);
+            sprintf(_msg, "{ \"value\":%.1f }", _current);
+            _network->pubMsg("outGarden/temp_current_garden", _msg);
         }
     };
 } // end of namespace Services

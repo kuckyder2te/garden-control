@@ -10,6 +10,7 @@ Project:   Garden Control
 #include "def.h"
 
 #define LOCAL_DEBUG
+char logBuf[DEBUG_MESSAGE_BUFFER_SIZE];
 
 #include "../include/myLogger.h"
 
@@ -62,7 +63,7 @@ void setup()
   LOGGER_NOTICE_FMT("************************* Garden Service (%s) *************************", __TIMESTAMP__);
   LOGGER_NOTICE("Start building Garden Service");
   _network = new Network(SID, PW, HOSTNAME, MQTT, MessageBroker::callback);
-  _network->begin();
+  _network->begin(MQTT, PORT_FOR_GARDENSERVICE);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
 

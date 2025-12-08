@@ -5,12 +5,13 @@
 #include <Logger.h>
 #include <stdio.h>
 #include <ArduinoJson.h>
+#include "network.h"
 
 extern HardwareSerial* DebugOutput;
-char logBuf[DEBUG_MESSAGE_BUFFER_SIZE];
 
 #if defined LOCAL_DEBUG || defined GLOBAL_DEBUG
 //#if (defined LOCAL_DEBUG || defined GLOBAL_DEBUG) && defined DEBUG
+extern char logBuf[DEBUG_MESSAGE_BUFFER_SIZE];
     #define LOGGER_VERBOSE_FMT(fmt,...) sprintf(logBuf,fmt, __VA_ARGS__);LOGGER_VERBOSE(logBuf)
     #define LOGGER_NOTICE(msg) Logger::notice(__PRETTY_FUNCTION__, msg)
     #define LOGGER_NOTICE_CHK(chk1,chk2,msg) if(chk1!=chk2){chk2 = chk1;Logger::notice(__PRETTY_FUNCTION__, msg);}
@@ -49,17 +50,39 @@ public:
     static void localLogger(Logger::Level level, const char *module, const char *message)
     {
 #ifdef LOG_TIMESTAMP
-         DebugOutput->print(millis());
-         DebugOutput->print(" - ");
+        DebugOutput->print(millis());
+        DebugOutput->print(" - ");
 #endif
-         DebugOutput->print(F("["));
-         DebugOutput->print(Logger::asString(level));
-         DebugOutput->print(F("]:"));
-//         if (strlen(module) > 0){
-             DebugOutput->print(module);
-             DebugOutput->print(":");
-//         }
-         DebugOutput->println(message);
+        DebugOutput->print(F("["));
+        DebugOutput->print(Logger::asString(level));
+        DebugOutput->print(F("]:"));
+ //       if (strlen(module) > 0){  // If these lines are enabled, restart the program always.
+            DebugOutput->print(module);
+            DebugOutput->print(":");
+ //       }
+        DebugOutput->println(message);
+    }
+
+    static void localUdpLogger(Logger::Level level, const char *module, const char *message)
+    {
+        if(_network!=NULL){
+            JsonDocument payload;
+            String Source = module;
+            Source.replace("::","_");
+            Source.replace(" ","_");
+            Source.replace("(","_");
+            Source.replace(")","_");
+            Source.replace("*","_");
+            Source.replace(",","");
+            Source.replace(".","");
+            payload["millis"]=millis();
+            payload["level"]=Logger::asString(level);
+            payload["message"]=message;
+            payload["source"]=Source;
+            if(_network!=NULL){                         // If Network isn't available yet
+                _network->sendLoggerMessage(payload);
+            }
+        }
     }
 };
 

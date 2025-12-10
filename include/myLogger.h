@@ -84,6 +84,30 @@ public:
             }
         }
     }
+
+        static void willyUdpLogger(Logger::Level level,const char *module, const char *message)
+    {
+        if (_network != NULL)
+        {
+            JsonDocument payload;
+            String Source = module;
+            Source.replace("::", "_");
+            Source.replace(" ", "_");
+            Source.replace("(", "_");
+            Source.replace(")", "_");
+            Source.replace("*", "_");
+            Source.replace(",", "");
+            Source.replace(".", "");
+            payload["millis"] = millis();
+            payload["level"]=Logger::asString(level);
+            payload["message"] = message;
+            payload["source"] = Source;
+            if (_network != NULL)
+            { // If Network isn't available yet
+                _network->sendLoggerMessage(payload);
+            }
+        }
+    }
 };
 
 #undef LOCAL_DEBUG

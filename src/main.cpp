@@ -57,7 +57,8 @@ void setup()
   delay(2000);
   Serial.begin(115200);
   DebugOutput->begin(DEBUG_SPEED);
-  Logger::setOutputFunction(&MyLoggerOutput::localUdpLogger);
+  // Logger::setOutputFunction(&MyLoggerOutput::localUdpLogger);
+  Logger::setOutputFunction(&MyLoggerOutput::willyUdpLogger);
   Logger::setLogLevel(Logger::DEBUG); // Muss immer einen Wert in platformio.ini haben (SILENT)
   delay(500);                         // For switching on Serial Monitor
   LOGGER_NOTICE_FMT("************************* Garden Service (%s) *************************", __TIMESTAMP__);

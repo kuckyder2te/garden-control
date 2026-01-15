@@ -43,38 +43,19 @@ namespace Services
 
         virtual void update() override
         {
-            static float _garden_tmin = 1000;
-            static float _garden_tmax = -1000;
-
             _sensor->requestTemperatures();
-            float _current = _sensor->getTempCByIndex(0);
+            float _temperature = _sensor->getTempCByIndex(0);
 
-            if (_current == DEVICE_DISCONNECTED_C || _current == 85.0)
+            if (_temperature == DEVICE_DISCONNECTED_C || _temperature == 85.0)
             {
                 LOGGER_ERROR("Sensor error!");
                 return;
             }
 
-            LOGGER_NOTICE_FMT("Garden current: %.1f min = %.1f max = %.1f\n", _current, _garden_tmin, _garden_tmax);
+            LOGGER_NOTICE_FMT("Garden current: %.1f \n", _temperature);
 
-            if (_current < _garden_tmin)
-            {
-                _garden_tmin = _current;
-                sprintf(_msg, "{ \"value\":%.1f }", _garden_tmin);
-                _network->pubMsg("outGarden/temp_min_garden", _msg);
-                LOGGER_NOTICE_FMT("temp min: %.1f", _garden_tmin);
-            }
-
-            if (_current > _garden_tmax)
-            {
-                _garden_tmax = _current;
-                sprintf(_msg, "{ \"value\":%.1f }", _garden_tmax);
-                _network->pubMsg("outGarden/temp_max_garden", _msg);
-                LOGGER_NOTICE_FMT("temp max: %.1f", _garden_tmax);
-            }
-
-            sprintf(_msg, "{ \"value\":%.1f }", _current);
-            _network->pubMsg("outGarden/temp_current_garden", _msg);
+            sprintf(_msg, "{ \"value\":%.1f }", _temperature);
+            _network->pubMsg("outGarden/garden/temperature/current", _msg);
         }
     };
 } // end of namespace Services

@@ -11,6 +11,6 @@ namespace Services {
 class Pool_pump : public ActorsBase {
 public:
     Pool_pump(uint8_t pin, unsigned long debounceMs = DEBOUNCE_TIME, unsigned long timeoutMs = 0)
-        : ActorsBase(pin, "pool/on", timeoutMs) {}
+        : ActorsBase(pin, "pool/pump", timeoutMs) {}
 };
 } // end of namespace Services

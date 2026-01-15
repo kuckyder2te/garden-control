@@ -16,11 +16,8 @@ namespace Services
     {
     protected:
         uint8_t _pump_pin;
-        String _topic;
+        String _rootTopic;
         bool _state = false;
-
-        //unsigned long _lastCmd = 0;
-        unsigned long _debounceMs = 200; // Standard value
         unsigned long _timeoutMs = 0;    // 0 = disable
         unsigned long _onSince = 0;      // Time from which the pump is ON
 
@@ -43,20 +40,20 @@ namespace Services
 
     public:
         ActorsBase(uint8_t pumpPin,
-                    const String &topic,
-                    unsigned long debounceMs = 200,
+                    const String &rootTopic,   
+                    
                     unsigned long timeoutMs = 0)
             : _pump_pin(pumpPin),
-              _topic(topic),
-              _debounceMs(debounceMs),
+              _rootTopic(rootTopic),
+              
               _timeoutMs(timeoutMs)
         {
-            LOGGER_NOTICE_FMT("Create dosing pump '%s' on pin %d", _topic.c_str(), _pump_pin);
+            LOGGER_NOTICE_FMT("Create vales '%s' on pin %d", _rootTopic.c_str(), _pump_pin);
 
             pinMode(_pump_pin, OUTPUT);
             digitalWrite(_pump_pin, LOW);
 
-            msgBroker.registerMessage(new StateMsg(*this, _topic + "/state"));
+            msgBroker.registerMessage(new StateMsg(*this, _rootTopic + "/state"));
         }
 
         virtual ~ActorsBase() = default;
@@ -66,16 +63,6 @@ namespace Services
         // ----------------------------------------------------------
         bool onMessage(JsonDocument payload)
         {
-            static unsigned long _lastCmd = millis();
-
-            // Debounce: Ignore MQTT commands arriving too quickly
-            if (millis() - _lastCmd > DEBOUNCE_TIME)
-            {
-                LOGGER_NOTICE_FMT("%s: command debounced (%lums)", _topic.c_str(), millis() - _lastCmd);
-            //    return true;
-            }
-            _lastCmd = millis();
-
             // Accept only boolean
             if (payload.is<bool>())
             {
@@ -84,7 +71,7 @@ namespace Services
                 return true;
             }
 
-            LOGGER_WARNING_FMT("%s: Payload not bool", _topic.c_str());
+            LOGGER_WARNING_FMT("%s: Payload not bool", _rootTopic.c_str());
             return false;
         }
 
@@ -95,7 +82,7 @@ namespace Services
             {
                 if (now - _onSince >= _timeoutMs)
                 {
-                    LOGGER_NOTICE_FMT("%s: timeout reached (%lums)", _topic.c_str(), _timeoutMs);
+                    LOGGER_NOTICE_FMT("%s: timeout reached (%lums)", _rootTopic.c_str(), _timeoutMs);
 
                     setState(false);
                     publishState();
@@ -111,12 +98,8 @@ namespace Services
             _state = on;
             digitalWrite(_pump_pin, on ? HIGH : LOW);
 
-            LOGGER_NOTICE_FMT("%s %s (pin %d)", _topic.c_str(), on ? "ON" : "OFF", _pump_pin);
+            LOGGER_NOTICE_FMT("%s %s (pin %d)", _rootTopic.c_str(), on ? "ON" : "OFF", _pump_pin);
         }
-
-        // bool getState() const { return _state; } // Not used anywhere
-
-        // void setDebounce(unsigned long ms) { _debounceMs = ms; } // Not used anywhere
 
     protected:
         // ----------------------------------------------------------
@@ -124,9 +107,9 @@ namespace Services
         // ----------------------------------------------------------
         void publishState()
         {
-            DynamicJsonDocument doc(64);
+            JsonDocument doc;
             doc.set(_state);
-            _network->pubMsg((_topic + "/state").c_str(), doc);
+            _network->pubMsg((_rootTopic + "/state").c_str(), doc);
         }
     };
 

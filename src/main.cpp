@@ -25,9 +25,9 @@ char logBuf[DEBUG_MESSAGE_BUFFER_SIZE];
 
 #include "../include/services/temperature.h"
 #include "../include/services/rainfall.h"
-#include "../include/services/valve_garden.h"
-#include "../include/services/valve_terrace.h"
-#include "../include/services/valve_rinse.h"
+#include "../include/services/sprinkler_east.h"
+#include "../include/services/sprinkler_west.h"
+#include "../include/services/pool_fill.h"
 #include "../include/services/pool_pump.h"
 
 #include <ArduinoJson.h>
@@ -42,9 +42,9 @@ HardwareSerial *DebugOutput = &Serial;
 
 MessageBroker msgBroker;
 
-Services::Valve_garden *ValveGarden;
-Services::Valve_terrace *ValveTerrace;
-Services::Valve_rinse *ValveRinse;
+Services::Sprinkler_east *Sprinkler_east;
+Services::Sprinkler_west *Sprinkler_west;
+Services::Pool_fill *Pool_fill;
 
 Services::Pool_pump *PoolPump;
 
@@ -57,8 +57,8 @@ void setup()
   delay(2000);
   Serial.begin(115200);
   DebugOutput->begin(DEBUG_SPEED);
-  // Logger::setOutputFunction(&MyLoggerOutput::localUdpLogger);
-  Logger::setOutputFunction(&MyLoggerOutput::willyUdpLogger);
+  Logger::setOutputFunction(&MyLoggerOutput::localUdpLogger);
+  //Logger::setOutputFunction(&MyLoggerOutput::willyUdpLogger);
   Logger::setLogLevel(Logger::DEBUG); // Muss immer einen Wert in platformio.ini haben (SILENT)
   delay(500);                         // For switching on Serial Monitor
   LOGGER_NOTICE_FMT("************************* Garden Service (%s) *************************", __TIMESTAMP__);
@@ -69,9 +69,9 @@ void setup()
   digitalWrite(LED_BUILTIN, LOW);
 
   /* 12V Valves */
-  ValveGarden = new Services::Valve_garden(VALVE_GARDEN, 200, 10000);
-  ValveTerrace = new Services::Valve_terrace(VALVE_TERRACE, 200, 10000);
-  ValveRinse = new Services::Valve_rinse(VALVE_RINSE, 200, 10000);
+  Sprinkler_east = new Services::Sprinkler_east(VALVE_GARDEN, 200, 10000);
+  Sprinkler_west = new Services::Sprinkler_west(VALVE_TERRACE, 200, 10000);
+  Pool_fill = new Services::Pool_fill(VALVE_RINSE, 200, 10000);
 
   /* 220V Pump */
   PoolPump = new Services::Pool_pump(POOL_PUMP, 200, 5000); // 5 s timeout
@@ -96,9 +96,9 @@ void loop()
   if (millis() - lastMillis >= 1000) // This can also be used to test the main loop.
   {
 
-    ValveGarden->update();
-    ValveTerrace->update();
-    ValveRinse->update();
+    Sprinkler_east->update();
+    Sprinkler_west->update();
+    Pool_fill->update();
 
     PoolPump->update();
 

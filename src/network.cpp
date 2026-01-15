@@ -48,7 +48,7 @@ void Network::begin()
 
     _web_server->on("/", HTTP_GET, [](AsyncWebServerRequest *request)
                     {
-            String message = "Poolservice (Build: ";
+            String message = "Garden-Services (Build: ";
             message += __DATE__; // Kompilierdatum, z. B. "Oct  5 2025"
             message += " ";
             message += __TIME__; // Kompilierzeit, z. B. "14:27:36"
@@ -98,13 +98,11 @@ bool Network::pubMsg(const char *topic, const char *payload)
 
 bool Network::pubMsg(const char *topic, const JsonDocument payload)
 {
-    LOGGER_NOTICE_FMT("%s - %s", topic, payload);
-    // LOGGER_NOTICE_FMT("%s - %s", topic, String(payload["payload"]).c_str());  // Fehler
-    String output;
-    serializeJson(payload, output);
     String Topic = ROOT_OUT_TOPIC "/";
+    String output;
     Topic += topic;
-    Serial.println(Topic);
+    serializeJson(payload, output);
+    LOGGER_NOTICE_FMT("%s - %s", Topic.c_str(), output.c_str());
     return _mqtt_client->publish(Topic.c_str(), output.c_str());
 }
 

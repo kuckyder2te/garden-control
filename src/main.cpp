@@ -69,12 +69,12 @@ void setup()
   digitalWrite(LED_BUILTIN, LOW);
 
   /* 12V Valves */
-  Sprinkler_east = new Services::Sprinkler_east(VALVE_GARDEN, 200, 10000);
-  Sprinkler_west = new Services::Sprinkler_west(VALVE_TERRACE, 200, 10000);
-  Pool_fill = new Services::Pool_fill(VALVE_RINSE, 200, 10000);
+  Sprinkler_east = new Services::Sprinkler_east(VALVE_GARDEN, 10000);
+  Sprinkler_west = new Services::Sprinkler_west(VALVE_TERRACE, 10000);
+  Pool_fill = new Services::Pool_fill(VALVE_RINSE, 10000);
 
   /* 220V Pump */
-  PoolPump = new Services::Pool_pump(POOL_PUMP, 200, 5000); // 5 s timeout
+  PoolPump = new Services::Pool_pump(POOL_PUMP, 5000); // 5 s timeout
 
   Tasks.add<Services::Temperature>("temperature")
       ->init(DALLAS)

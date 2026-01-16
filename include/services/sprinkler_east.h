@@ -11,7 +11,7 @@ namespace Services
 {
 class Sprinkler_east : public ActorsBase {
 public:
-    Sprinkler_east(uint8_t pin, unsigned long debounceMs = DEBOUNCE_TIME, unsigned long timeoutMs = 0)
+    Sprinkler_east(uint8_t pin, unsigned long timeoutMs = 0)
         : ActorsBase(pin, "sprinkler/east", timeoutMs) {}
 };
 } // end of namespace Services

@@ -16,9 +16,9 @@
 
 #define DALLAS         0    // D3
 #define POOL_PUMP      5    // D1
-#define VALVE_TERRACE 14    // D5 
-#define VALVE_GARDEN  12    // D6
-#define VALVE_RINSE    4    // D2
+#define SPRINKLER_EAST 14    // D5 
+#define SPRINKLER_WEST  12    // D6
+#define POOL_FILL       4    // D2
 #define RAINDROP_PIN  13    // D7
 
 #define DEBOUNCE_TIME 200   // 200 milliseconds

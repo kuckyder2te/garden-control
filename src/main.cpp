@@ -69,9 +69,9 @@ void setup()
   digitalWrite(LED_BUILTIN, LOW);
 
   /* 12V Valves */
-  Sprinkler_east = new Services::Sprinkler_east(VALVE_GARDEN, 10000);
-  Sprinkler_west = new Services::Sprinkler_west(VALVE_TERRACE, 10000);
-  Pool_fill = new Services::Pool_fill(VALVE_RINSE, 10000);
+  Sprinkler_east = new Services::Sprinkler_east(SPRINKLER_EAST, 10000);
+  Sprinkler_west = new Services::Sprinkler_west(SPRINKLER_WEST, 10000);
+  Pool_fill = new Services::Pool_fill(POOL_FILL, 10000);
 
   /* 220V Pump */
   PoolPump = new Services::Pool_pump(POOL_PUMP, 5000); // 5 s timeout

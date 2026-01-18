@@ -6,13 +6,17 @@
 #include "myLogger.h"
 /// @endcond
 
+#include <TaskManager.h>
 #include "../message.h"
 #include "../messageBroker.h"
+#include "../network.h"
 #include "def.h"
+
+extern Network *_network;
 
 namespace Services
 {
-    class ActorsBase
+    class ActorsBase : public Task::Base
     {
     protected:
         uint8_t _pump_pin;
@@ -43,20 +47,24 @@ namespace Services
                     const String &rootTopic,   
                     
                     unsigned long timeoutMs = 0)
-            : _pump_pin(pumpPin),
+            : Task::Base(rootTopic),
+              _pump_pin(pumpPin),
               _rootTopic(rootTopic),
               
               _timeoutMs(timeoutMs)
         {
             LOGGER_NOTICE_FMT("Create vales '%s' on pin %d", _rootTopic.c_str(), _pump_pin);
+        }
 
+        virtual ~ActorsBase() = default;
+
+        virtual void begin() override
+        {
             pinMode(_pump_pin, OUTPUT);
             digitalWrite(_pump_pin, LOW);
 
             msgBroker.registerMessage(new StateMsg(*this, _rootTopic + "/state"));
         }
-
-        virtual ~ActorsBase() = default;
 
         // ----------------------------------------------------------
         // Processing MQTT messages
@@ -76,8 +84,9 @@ namespace Services
         }
 
         // Must be called periodically (e.g., in loop()).
-        virtual void update(unsigned long now = millis())
+        virtual void update() override
         {
+            unsigned long now = millis();
             if (_state && _timeoutMs > 0 && _onSince > 0)
             {
                 if (now - _onSince >= _timeoutMs)
@@ -97,6 +106,7 @@ namespace Services
         {
             _state = on;
             digitalWrite(_pump_pin, on ? HIGH : LOW);
+            _onSince = on ? millis() : 0;
 
             LOGGER_NOTICE_FMT("%s %s (pin %d)", _rootTopic.c_str(), on ? "ON" : "OFF", _pump_pin);
         }

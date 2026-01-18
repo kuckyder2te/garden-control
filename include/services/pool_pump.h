@@ -6,11 +6,11 @@
 /// @endcond
 
 #include "actors_base.h"
+#include "def.h"
 
 namespace Services {
 class Pool_pump : public ActorsBase {
 public:
-    Pool_pump(uint8_t pin, unsigned long timeoutMs = 0)
-        : ActorsBase(pin, "pool/pump", timeoutMs) {}
+    Pool_pump() : ActorsBase(POOL_PUMP, "pool/pump", TIMEOUT_HEATPUMP) {}
 };
 } // end of namespace Services

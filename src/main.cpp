@@ -42,16 +42,6 @@ HardwareSerial *DebugOutput = &Serial;
 
 MessageBroker msgBroker;
 
-Services::Sprinkler_east *Sprinkler_east;
-Services::Sprinkler_west *Sprinkler_west;
-Services::Pool_fill *Pool_fill;
-
-Services::Pool_pump *PoolPump;
-
-unsigned long lastMsg = 0;
-#define MSG_BUFFER_SIZE (50)
-char msg[MSG_BUFFER_SIZE];
-
 void setup()
 {
   delay(2000);
@@ -69,12 +59,12 @@ void setup()
   digitalWrite(LED_BUILTIN, LOW);
 
   /* 12V Valves */
-  Sprinkler_east = new Services::Sprinkler_east(SPRINKLER_EAST, 10000);
-  Sprinkler_west = new Services::Sprinkler_west(SPRINKLER_WEST, 10000);
-  Pool_fill = new Services::Pool_fill(POOL_FILL, 10000);
+  Tasks.add<Services::Sprinkler_east>("sprinkler_east");
+  Tasks.add<Services::Sprinkler_west>("sprinkler_west");
+  Tasks.add<Services::Pool_fill>("pool_fill");
 
   /* 220V Pump */
-  PoolPump = new Services::Pool_pump(POOL_PUMP, 5000); // 5 s timeout
+  Tasks.add<Services::Pool_pump>("pool_pump");
 
   Tasks.add<Services::Temperature>("temperature")
       ->init(DALLAS)
@@ -95,13 +85,6 @@ void loop()
 
   if (millis() - lastMillis >= 1000) // This can also be used to test the main loop.
   {
-
-    Sprinkler_east->update();
-    Sprinkler_west->update();
-    Pool_fill->update();
-
-    PoolPump->update();
-
     digitalWrite(LED_BUILTIN, lastState);
     lastState = !lastState;
     lastMillis = millis();

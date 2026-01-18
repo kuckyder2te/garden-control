@@ -6,13 +6,13 @@
 /// @endcond
 
 #include "actors_base.h"
+#include "def.h"
 
 
 namespace Services
 {
 class Sprinkler_west : public ActorsBase {
 public:
-    Sprinkler_west(uint8_t pin, unsigned long timeoutMs = 0)
-        : ActorsBase(pin, "sprinkler/west", timeoutMs) {}
+    Sprinkler_west() : ActorsBase(SPRINKLER_WEST, "sprinkler/west", 0) {}
 };
 } // end of namespace Services

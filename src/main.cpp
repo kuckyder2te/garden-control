@@ -59,13 +59,17 @@ void setup()
   digitalWrite(LED_BUILTIN, LOW);
 
   /* 12V Valves */
-  Tasks.add<Services::Sprinkler_east>("sprinkler_east");
-  Tasks.add<Services::Sprinkler_west>("sprinkler_west");
-  Tasks.add<Services::Pool_fill>("pool_fill");
+  Tasks.add<Services::Sprinkler_east>("sprinkler_east")
+      ->startFps(10); // 10 Hz = alle 100ms;
+  Tasks.add<Services::Sprinkler_west>("sprinkler_west")
+      ->startFps(10); // 10 Hz = alle 100ms;
+  Tasks.add<Services::Pool_fill>("pool_fill")
+      ->startFps(10); // 10 Hz = alle 100ms;
 
   /* 220V Pump */
-  Tasks.add<Services::Pool_pump>("pool_pump");
-
+  Tasks.add<Services::Pool_pump>("pool_pump")
+      ->startFps(10); // 10 Hz = alle 100ms;
+      
   Tasks.add<Services::Temperature>("temperature")
       ->init(DALLAS)
       ->startFps(0.017); // 0,017 ~ 1 minute

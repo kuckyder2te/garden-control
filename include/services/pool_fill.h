@@ -13,6 +13,7 @@ namespace Services
 {
 class Pool_fill : public ActorsBase {
 public:
-    Pool_fill() : ActorsBase(POOL_FILL, "pool/fill", 0) {}
+    Pool_fill(const String& taskName) 
+            : ActorsBase(taskName, POOL_FILL, "pool/fill", 0) {}
 };
 } // end of namespace Services

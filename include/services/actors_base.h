@@ -43,9 +43,9 @@ namespace Services
         };
 
     public:
-        ActorsBase(uint8_t pumpPin,
-                    const String &rootTopic,   
-                    
+        ActorsBase(const String &taskName,
+                    uint8_t pumpPin,
+                    const String &rootTopic,                     
                     unsigned long timeoutMs = 0)
             : Task::Base(rootTopic),
               _pump_pin(pumpPin),

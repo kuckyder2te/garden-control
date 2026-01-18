@@ -11,6 +11,7 @@
 namespace Services {
 class Pool_pump : public ActorsBase {
 public:
-    Pool_pump() : ActorsBase(POOL_PUMP, "pool/pump", TIMEOUT_HEATPUMP) {}
+    Pool_pump(const String taskName)
+     : ActorsBase(taskName, POOL_PUMP, "pool/pump", TIMEOUT_HEATPUMP) {}
 };
 } // end of namespace Services

@@ -13,6 +13,7 @@ namespace Services
 {
 class Sprinkler_west : public ActorsBase {
 public:
-    Sprinkler_west() : ActorsBase(SPRINKLER_WEST, "sprinkler/west", 0) {}
+    Sprinkler_west(const String& taskName) 
+        : ActorsBase(taskName, SPRINKLER_WEST, "sprinkler/west", 0) {}
 };
 } // end of namespace Services

@@ -54,7 +54,7 @@ void setup()
   LOGGER_NOTICE_FMT("************************* Garden Service (%s) *************************", __TIMESTAMP__);
   LOGGER_NOTICE("Start building Garden Service");
   _network = new Network(SID, PW, HOSTNAME, MQTT, MessageBroker::callback);
-  _network->begin(MQTT, PORT_FOR_GARDENSERVICE);
+  _network->begin(LOGGER, PORT_FOR_GARDENSERVICE);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
 

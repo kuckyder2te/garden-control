@@ -55,7 +55,7 @@ namespace Services
             LOGGER_NOTICE_FMT("Garden current: %.1f \n", _temperature);
 
             sprintf(_msg, "{ \"value\":%.1f }", _temperature);
-            _network->pubMsg("outGarden/garden/temperature/current", _msg);
+            _network->pubMsg("outGarden/garden/temperature", _msg);
         }
     };
 } // end of namespace Services

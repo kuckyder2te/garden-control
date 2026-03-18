@@ -76,6 +76,7 @@ void setup()
       ->init(DALLAS)
       ->startFps(0.017); // 0,017 ~ 1 minute
 
+    delay(2000);
   msgBroker.printTopics();
   LOGGER_NOTICE("Finished building Garden Service. Will enter infinite loop");
 

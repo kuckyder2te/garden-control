@@ -102,6 +102,14 @@ public:
         }
         LOGGER_NOTICE("--------");
     }
+    String getTopics(String msg)
+    {
+        for (uint8_t i = 0; i < _msgCounter; i++)
+        {
+            msg.concat(_messages[i]->toString());
+        }
+        return msg;
+    }
 };
 
 uint8_t MessageBroker::_msgCounter;

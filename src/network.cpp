@@ -5,6 +5,7 @@
 /// @endcond
 
 #include "../include/network.h"
+//#include "../include/messageBroker.h"
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 #include <PubSubClient.h>
@@ -52,7 +53,8 @@ void Network::begin()
             message += __DATE__; // Kompilierdatum, z. B. "Oct  5 2025"
             message += " ";
             message += __TIME__; // Kompilierzeit, z. B. "14:27:36"
-            message += ")";
+            message += ")\r\n";
+            //message = msgBroker.returnTopics(message);
             request->send(200, "text/plain", message); });
 
     ElegantOTA.begin(_web_server); // Start ElegantOTA
@@ -115,7 +117,7 @@ bool Network::mqtt_connect()
     if (_mqtt_client->connect(clientId.c_str()))
     {
         LOGGER_NOTICE("connected");
-        _mqtt_client->publish(ROOT_OUT_TOPIC, "{\"msg\":\"Reconnect: Poolservice\"}");
+        _mqtt_client->publish(ROOT_OUT_TOPIC, "{\"msg\":\"Reconnect: Gardenservice\"}");
         LOGGER_NOTICE_FMT("subscribed to: %s", ROOT_IN_TOPIC "/#");
         _mqtt_client->subscribe(ROOT_IN_TOPIC "/#");
         return true;

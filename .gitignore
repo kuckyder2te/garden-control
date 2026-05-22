@@ -6,3 +6,4 @@
 
 # Secrets (wichtig!)
 /src/secrets.h
+build/
